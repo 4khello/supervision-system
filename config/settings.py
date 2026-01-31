@@ -7,17 +7,18 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
+
 raw_hosts = os.getenv("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [
     h.strip().strip('"').strip("'")
     for h in raw_hosts.replace("\n", ",").split(",")
     if h.strip()
 ]
+
 CSRF_TRUSTED_ORIGINS = [
     "https://supervision-system-production.up.railway.app",
     "https://*.up.railway.app",
 ]
-
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -40,7 +41,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
@@ -48,7 +48,7 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             BASE_DIR / "templates",
-            BASE_DIR / "core" / "templates",   # ✅ ده اللي بيحل المشكلة
+            BASE_DIR / "core" / "templates",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -61,7 +61,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 WSGI_APPLICATION = "config.wsgi.application"
 
@@ -95,6 +94,9 @@ TIME_ZONE = "Africa/Cairo"
 USE_I18N = True
 USE_TZ = True
 
+# =========================
+# Static files (Railway)
+# =========================
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
@@ -102,9 +104,7 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "core" / "static"]
