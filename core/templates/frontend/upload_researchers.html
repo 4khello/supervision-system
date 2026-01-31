@@ -1,0 +1,105 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>رفع ملف Excel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <div class="brand">
+            <div class="brand-logo">
+                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+            </div>
+            <div class="brand-text">
+                <h1>رفع ملف Excel - الإشراف على الدراسات العليا</h1>
+                <p>كلية علوم الرياضة - جامعة بنها</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="card" style="max-width: 800px; margin: 2rem auto;">
+        <div class="card-head" style="margin-bottom: 2rem;">
+            <div class="card-title">رفع ملف Excel للباحثين</div>
+        </div>
+
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border-right: 4px solid #3b82f6;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #1e40af; font-size: 1rem;">
+                <i class="ri-information-line"></i> تعليمات مهمة
+            </h3>
+            <ul style="margin: 0; padding-right: 1.5rem; color: #475569;">
+                <li>الملف يجب أن يكون بصيغة Excel (.xlsx)</li>
+                <li>الصف الأول يجب أن يحتوي على أسماء الأعمدة</li>
+                <li><strong>الأعمدة المطلوبة:</strong>
+                    <ul style="margin-top: 0.5rem;">
+                        <li><strong>الاسم</strong> (اسم الباحث)</li>
+                        <li><strong>المرحلة</strong> (ماجستير / دكتوراه)</li>
+                        <li><strong>العنوان</strong> (عنوان الرسالة)</li>
+                        <li><strong>المشرفين</strong> (يمكن الفصل بينهم بـ | أو ،)</li>
+                    </ul>
+                </li>
+                <li><strong>الأعمدة الاختيارية:</strong>
+                    <ul style="margin-top: 0.5rem;">
+                        <li><strong>النوع</strong> (باحث / معيد)</li>
+                        <li><strong>القسم</strong> (قسم المشرف)</li>
+                        <li><strong>الحالة</strong> (مسجل / ناقش / مفصول / إلغاء)</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" style="margin-top: 2rem;">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="file">اختر ملف Excel</label>
+                <input 
+                    type="file" 
+                    name="file" 
+                    id="file" 
+                    accept=".xlsx,.xls" 
+                    required 
+                    class="form-control"
+                    style="padding: 0.8rem;"
+                >
+            </div>
+
+            <div class="modal-actions" style="margin-top: 2rem;">
+                <a href="{% url 'supervisors_page' %}" class="btn btn-secondary">
+                    <i class="ri-arrow-right-line"></i> رجوع
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-upload-cloud-line"></i> رفع الملف
+                </button>
+            </div>
+        </form>
+
+        {% if messages %}
+            <div style="margin-top: 2rem;">
+                {% for message in messages %}
+                    <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %}; 
+                                padding: 1rem; 
+                                border-radius: 8px; 
+                                border-right: 4px solid {% if message.tags == 'error' %}#dc2626{% else %}#16a34a{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+</footer>
+
+</body>
+</html>

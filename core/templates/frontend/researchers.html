@@ -1,0 +1,276 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>الباحثين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <div class="brand">
+            <div class="brand-logo">
+                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+            </div>
+            <div class="brand-text">
+                <h1>الباحثين</h1>
+                <p>كلية علوم الرياضة - جامعة بنها</p>
+            </div>
+        </div>
+        <div class="user-profile">
+            <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
+            <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- معلومات الصفحة -->
+    <section class="card" style="margin-bottom: 1.5rem; padding: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem;">قائمة الباحثين</h2>
+                <p style="color: var(--text-light); margin: 0.5rem 0 0 0;">
+                    إجمالي: {{ researches.count }} باحث •
+                    {% if sf == "discussed" %}عرض: ناقشوا
+                    {% elif sf == "dismissed" %}عرض: مفصولين
+                    {% elif sf == "active_discussed" %}عرض: الحاليين + ناقشوا
+                    {% elif sf == "all" %}عرض: الكل
+                    {% else %}عرض: الحاليين{% endif %}
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'add_researcher' %}" class="btn btn-primary">
+                    <i class="ri-user-add-line"></i> إضافة باحث جديد
+                </a>
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    <i class="ri-home-line"></i> الرئيسية
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- أدوات البحث والفلترة -->
+    <section class="controls-section no-print">
+        <form method="get" class="filters-wrapper" style="width: 100%;">
+            <div class="search-wrapper">
+                <i class="ri-search-line"></i>
+                <input type="text" name="q" class="form-control" placeholder="بحث باسم الباحث أو عنوان الرسالة..." value="{{ q }}">
+            </div>
+            
+            <select name="sf" class="form-control" onchange="this.form.submit()">
+                <option value="active" {% if sf == "active" %}selected{% endif %}>الحاليين</option>
+                <option value="discussed" {% if sf == "discussed" %}selected{% endif %}>ناقشوا</option>
+                <option value="active_discussed" {% if sf == "active_discussed" %}selected{% endif %}>الحاليين + ناقشوا</option>
+                <option value="dismissed" {% if sf == "dismissed" %}selected{% endif %}>مفصولين</option>
+                <option value="all" {% if sf == "all" %}selected{% endif %}>الكل</option>
+            </select>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="ri-search-line"></i> بحث
+            </button>
+            
+            <button type="button" onclick="window.print()" class="btn btn-secondary">
+                <i class="ri-printer-line"></i> طباعة
+            </button>
+            
+            <a href="{% url 'researchers_page' %}" class="btn btn-secondary">
+                <i class="ri-refresh-line"></i> مسح
+            </a>
+        </form>
+    </section>
+
+    <!-- جدول الباحثين -->
+    <section class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم الباحث</th>
+                    <th>الدرجة</th>
+                    <th>عنوان الرسالة</th>
+                    <th>المشرفون</th>
+                    <th>القسم</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for research in researches %}
+                <tr {% if research.researcher_type == "ASSISTANT" %}class="assistant-row"{% endif %}>
+                    <td>{{ research.id }}</td>
+                    <td>
+                        <a href="{% url 'research_detail' research.id %}" style="text-decoration: none; color: inherit;">
+                            <div class="student-info" style="cursor: pointer; transition: background 0.2s;">
+                                <div class="student-img">{{ research.researcher_name|slice:":1" }}</div>
+                                <div class="student-text">
+                                    <div><strong>{{ research.researcher_name }}</strong></div>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                    <td>
+                        {% if research.degree == "PHD" %}
+                            <span class="badge badge-phd">دكتوراه</span>
+                        {% else %}
+                            <span class="badge badge-master">ماجستير</span>
+                        {% endif %}
+                    </td>
+                    <td style="max-width: 300px;">
+                        {{ research.title|default:"—" }}
+                    </td>
+                    <td>
+                        {% for link in research.researchsupervision_set.all %}
+                            <span class="tag">د. {{ link.supervisor.name }}</span>{% if not forloop.last %}، {% endif %}
+                        {% empty %}
+                            <span style="color: var(--text-light);">—</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if research.department %}
+                            {{ research.department.name }}
+                        {% else %}
+                            <span style="color: var(--text-light);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if research.status == "REGISTERED" %}
+                            <span class="status-badge status-researcher">
+                                <i class="ri-loader-2-line"></i> مسجل
+                            </span>
+                        {% elif research.status == "DISCUSSED" %}
+                            <span class="status-badge status-defended">
+                                <i class="ri-check-line"></i> ناقش
+                            </span>
+                        {% elif research.status == "DISMISSED" %}
+                            <span class="status-badge status-dismissed">
+                                <i class="ri-user-unfollow-line"></i> مفصول
+                            </span>
+                        {% elif research.status == "CANCELLED" %}
+                            <span class="status-badge" style="background: #fef2f2; color: #991b1b;">
+                                <i class="ri-close-circle-line"></i> إلغاء
+                            </span>
+                        {% else %}
+                            <span class="status-badge">{{ research.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'edit_research' research.id %}" class="action-btn" title="تعديل">
+                            <i class="ri-pencil-line"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-light);">
+                        <i class="ri-file-search-line" style="font-size: 3rem; opacity: 0.5;"></i>
+                        <p style="margin-top: 10px;">لا توجد سجلات باحثين تطابق معايير البحث.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+</footer>
+
+<footer>
+    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+</footer>
+
+<style>
+@media print {
+    .no-print,
+    .controls-section,
+    header .user-profile,
+    footer,
+    .action-btn {
+        display: none !important;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+    }
+    
+    table {
+        font-size: 10px !important;
+    }
+    
+    table th,
+    table td {
+        border: 1px solid #ddd;
+        padding: 4px 6px;
+        word-wrap: break-word;
+    }
+    
+    table thead {
+        background: #f0f0f0 !important;
+        font-weight: bold;
+    }
+    
+    /* تقليل حجم أعمدة معينة */
+    table td:nth-child(3) { /* عنوان الرسالة */
+        max-width: 250px !important;
+        font-size: 9px !important;
+    }
+    
+    table .tag {
+        padding: 2px 4px;
+        font-size: 8px;
+    }
+    
+    @page {
+        margin: 1cm;
+        size: A4 landscape;
+    }
+    
+    header {
+        border-bottom: 2px solid #1a4f9c;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    header .brand-text h1 {
+        font-size: 16px;
+    }
+}
+
+/* تمييز المعيدين */
+tr.assistant-row {
+    background-color: #fff7ed !important;
+}
+
+tr.assistant-row:hover {
+    background-color: #fed7aa !important;
+}
+
+/* hover effect للباحثين */
+.student-info:hover {
+    background-color: #f1f5f9;
+    border-radius: 6px;
+}
+</style>
+
+</body>
+</html>

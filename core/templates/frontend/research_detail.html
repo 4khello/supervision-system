@@ -1,0 +1,246 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>{{ research.researcher_name }} - تفاصيل الباحث</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <div class="brand">
+            <div class="brand-logo">
+                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+            </div>
+            <div class="brand-text">
+                <h1>تفاصيل الباحث</h1>
+                <p>كلية علوم الرياضة - جامعة بنها</p>
+            </div>
+        </div>
+        <div class="user-profile">
+            <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
+            <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- العنوان الرئيسي -->
+    <section class="card" style="margin-bottom: 1.5rem; padding: 2rem; text-align: center; background: linear-gradient(135deg, rgba(26,79,156,0.1), rgba(34,197,94,0.1));">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: var(--primary-color); color: white; font-size: 2rem; margin-bottom: 1rem;">
+            {{ research.researcher_name|slice:":1" }}
+        </div>
+        <h1 style="margin: 0; font-size: 2rem;">{{ research.researcher_name }}</h1>
+        <p style="margin: 0.5rem 0 0 0; color: var(--text-light); font-size: 1.1rem;">
+            رقم القيد: {{ research.id }}
+        </p>
+        <div style="margin-top: 1rem; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            {% if research.degree == "PHD" %}
+                <span class="badge badge-phd" style="font-size: 1rem; padding: 0.5rem 1rem;">دكتوراه</span>
+            {% else %}
+                <span class="badge badge-master" style="font-size: 1rem; padding: 0.5rem 1rem;">ماجستير</span>
+            {% endif %}
+            
+            {% if research.researcher_type == "ASSISTANT" %}
+                <span class="badge" style="background: #f59e0b; color: white; font-size: 1rem; padding: 0.5rem 1rem;">معيد</span>
+            {% else %}
+                <span class="badge" style="background: #3b82f6; color: white; font-size: 1rem; padding: 0.5rem 1rem;">باحث</span>
+            {% endif %}
+            
+            {% if research.status == "REGISTERED" %}
+                <span class="status-badge status-researcher" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                    <i class="ri-loader-2-line"></i> مسجل
+                </span>
+            {% elif research.status == "DISCUSSED" %}
+                <span class="status-badge status-defended" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                    <i class="ri-check-line"></i> ناقش
+                </span>
+            {% elif research.status == "DISMISSED" %}
+                <span class="status-badge status-dismissed" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                    <i class="ri-user-unfollow-line"></i> مفصول
+                </span>
+            {% else %}
+                <span class="status-badge" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                    {{ research.get_status_display }}
+                </span>
+            {% endif %}
+        </div>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+        
+        <!-- معلومات البحث -->
+        <div class="card">
+            <div class="card-head" style="margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">
+                <div class="card-title">
+                    <i class="ri-book-line"></i> معلومات البحث
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                    <div style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.25rem;">عنوان الرسالة</div>
+                    <div style="font-weight: 600; line-height: 1.6;">
+                        {{ research.title|default:"—" }}
+                    </div>
+                </div>
+                
+                <div>
+                    <div style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.25rem;">القسم</div>
+                    <div style="font-weight: 600;">
+                        {% if research.department %}
+                            <i class="ri-building-line"></i> {{ research.department.name }}
+                        {% else %}
+                            <span style="color: var(--text-light);">—</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if research.status_note %}
+                <div>
+                    <div style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 0.25rem;">ملاحظة الحالة</div>
+                    <div style="font-weight: 600;">{{ research.status_note }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- المشرفون -->
+        <div class="card">
+            <div class="card-head" style="margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">
+                <div class="card-title">
+                    <i class="ri-user-star-line"></i> المشرفون ({{ supervisors|length }})
+                </div>
+            </div>
+            
+            {% if supervisors %}
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    {% for supervisor in supervisors %}
+                        <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border-right: 3px solid var(--primary-color);">
+                            <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">
+                                د. {{ supervisor.name }}
+                            </div>
+                            {% if supervisor.department %}
+                                <div style="color: var(--text-light); font-size: 0.9rem;">
+                                    <i class="ri-building-line"></i> {{ supervisor.department.name }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: var(--text-light); text-align: center; padding: 2rem;">
+                    لا يوجد مشرفون مسجلون
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- التواريخ المهمة -->
+        <div class="card">
+            <div class="card-head" style="margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">
+                <div class="card-title">
+                    <i class="ri-calendar-line"></i> التواريخ المهمة
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                    <span style="color: var(--text-light);">تاريخ التسجيل</span>
+                    <span style="font-weight: 600;">
+                        {% if research.registration_date %}
+                            {{ research.registration_date|date:"d/m/Y" }}
+                        {% else %}
+                            <span style="color: var(--text-light);">—</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                    <span style="color: var(--text-light);">تاريخ الإطار</span>
+                    <span style="font-weight: 600;">
+                        {% if research.frame_date %}
+                            {{ research.frame_date|date:"d/m/Y" }}
+                        {% else %}
+                            <span style="color: var(--text-light);">—</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                    <span style="color: var(--text-light);">تاريخ موافقة الجامعة</span>
+                    <span style="font-weight: 600;">
+                        {% if research.university_approval_date %}
+                            {{ research.university_approval_date|date:"d/m/Y" }}
+                        {% else %}
+                            <span style="color: var(--text-light);">—</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                {% if research.status_date %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                    <span style="color: var(--text-light);">تاريخ الحالة</span>
+                    <span style="font-weight: 600;">{{ research.status_date|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- معلومات إضافية -->
+        <div class="card">
+            <div class="card-head" style="margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">
+                <div class="card-title">
+                    <i class="ri-information-line"></i> معلومات إضافية
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                    <span style="color: var(--text-light);">تاريخ الإضافة</span>
+                    <span style="font-weight: 600;">{{ research.created_at|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px;">
+                    <span style="color: var(--text-light);">آخر تحديث</span>
+                    <span style="font-weight: 600;">{{ research.updated_at|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الأزرار -->
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{% url 'home' %}" class="btn btn-secondary">
+            <i class="ri-home-line"></i> الرئيسية
+        </a>
+        <a href="{% url 'edit_research' research.id %}" class="btn btn-primary">
+            <i class="ri-pencil-line"></i> تعديل البيانات
+        </a>
+        <button onclick="confirmDelete({{ research.id }}, '{{ research.researcher_name }}')" class="btn" style="background: #ef4444; color: white;">
+            <i class="ri-delete-bin-line"></i> حذف الباحث
+        </button>
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="ri-arrow-right-line"></i> رجوع
+        </a>
+    </div>
+</main>
+
+<script>
+function confirmDelete(id, name) {
+    if (confirm('هل أنت متأكد من حذف الباحث: ' + name + '؟\n\nهذا الإجراء لا يمكن التراجع عنه!')) {
+        window.location.href = '/delete-research/' + id + '/';
+    }
+}
+</script>
+
+<footer>
+    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+</footer>
+
+</body>
+</html>

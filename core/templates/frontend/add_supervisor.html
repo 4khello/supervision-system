@@ -1,0 +1,110 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>إضافة مشرف جديد</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <div class="brand">
+            <div class="brand-logo">
+                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+            </div>
+            <div class="brand-text">
+                <h1>إضافة مشرف جديد</h1>
+                <p>كلية علوم الرياضة - جامعة بنها</p>
+            </div>
+        </div>
+        <div class="user-profile">
+            <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
+            <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="card" style="max-width: 600px; margin: 2rem auto;">
+        <div class="card-head" style="margin-bottom: 2rem;">
+            <div class="card-title">
+                <i class="ri-user-star-line"></i> إضافة مشرف جديد
+            </div>
+        </div>
+
+        {% if messages %}
+            <div style="margin-bottom: 1.5rem;">
+                {% for message in messages %}
+                    <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %}; 
+                                padding: 1rem; 
+                                border-radius: 8px; 
+                                border-right: 4px solid {% if message.tags == 'error' %}#dc2626{% else %}#16a34a{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                    <i class="ri-user-line"></i> معلومات المشرف
+                </h3>
+                
+                <div class="form-group">
+                    <label for="name">اسم المشرف <span style="color: red;">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control" 
+                           placeholder="مثال: د. أحمد محمد" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="department">القسم <span style="color: red;">*</span></label>
+                    <select id="department" name="department" class="form-control" required>
+                        <option value="">-- اختر القسم --</option>
+                        {% for dept in all_departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <small style="color: var(--text-light); display: block; margin-top: 0.5rem;">
+                        <i class="ri-information-line"></i> إذا لم يكن القسم موجوداً، يمكنك إضافته من لوحة الإدارة
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" name="is_active" value="true" checked 
+                               style="margin-left: 10px; width: 20px; height: 20px;">
+                        <span>مشرف نشط</span>
+                    </label>
+                    <small style="color: var(--text-light); display: block; margin-top: 0.5rem;">
+                        <i class="ri-information-line"></i> المشرفون النشطون فقط يظهرون في القوائم
+                    </small>
+                </div>
+            </div>
+
+            <!-- الأزرار -->
+            <div class="modal-actions" style="margin-top: 2rem;">
+                <a href="{% url 'supervisors_page' %}" class="btn btn-secondary">
+                    <i class="ri-arrow-right-line"></i> إلغاء
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-save-line"></i> حفظ المشرف
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+</footer>
+
+</body>
+</html>

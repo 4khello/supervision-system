@@ -1,0 +1,212 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>تعديل بحث - {{ research.researcher_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <div class="brand">
+            <div class="brand-logo">
+                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+            </div>
+            <div class="brand-text">
+                <h1>تعديل بحث</h1>
+                <p>كلية علوم الرياضة - جامعة بنها</p>
+            </div>
+        </div>
+        <div class="user-profile">
+            <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
+            <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="card" style="max-width: 900px; margin: 2rem auto;">
+        <div class="card-head" style="margin-bottom: 2rem;">
+            <div class="card-title">
+                <i class="ri-pencil-line"></i> تعديل بيانات: {{ research.researcher_name }}
+            </div>
+        </div>
+
+        {% if messages %}
+            <div style="margin-bottom: 1.5rem;">
+                {% for message in messages %}
+                    <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %}; 
+                                padding: 1rem; 
+                                border-radius: 8px; 
+                                border-right: 4px solid {% if message.tags == 'error' %}#dc2626{% else %}#16a34a{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- المعلومات الأساسية -->
+            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                    <i class="ri-user-line"></i> المعلومات الأساسية
+                </h3>
+                
+                <div class="form-group">
+                    <label for="researcher_name">اسم الباحث <span style="color: red;">*</span></label>
+                    <input type="text" id="researcher_name" name="researcher_name" class="form-control" 
+                           value="{{ research.researcher_name }}" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="degree">الدرجة العلمية <span style="color: red;">*</span></label>
+                        <select id="degree" name="degree" class="form-control" required>
+                            <option value="MA" {% if research.degree == "MA" %}selected{% endif %}>ماجستير</option>
+                            <option value="PHD" {% if research.degree == "PHD" %}selected{% endif %}>دكتوراه</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="researcher_type">النوع <span style="color: red;">*</span></label>
+                        <select id="researcher_type" name="researcher_type" class="form-control" required>
+                            <option value="RESEARCHER" {% if research.researcher_type == "RESEARCHER" %}selected{% endif %}>باحث</option>
+                            <option value="ASSISTANT" {% if research.researcher_type == "ASSISTANT" %}selected{% endif %}>معيد</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="title">عنوان الرسالة</label>
+                    <textarea id="title" name="title" class="form-control" rows="3" 
+                              placeholder="اكتب عنوان الرسالة...">{{ research.title }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="department">القسم</label>
+                    <select id="department" name="department" class="form-control">
+                        <option value="">-- اختر القسم --</option>
+                        {% for dept in all_departments %}
+                            <option value="{{ dept.id }}" {% if research.department_id == dept.id %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- الحالة -->
+            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                    <i class="ri-flag-line"></i> الحالة
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="status">الحالة <span style="color: red;">*</span></label>
+                        <select id="status" name="status" class="form-control" required>
+                            <option value="REGISTERED" {% if research.status == "REGISTERED" %}selected{% endif %}>مسجل</option>
+                            <option value="DISCUSSED" {% if research.status == "DISCUSSED" %}selected{% endif %}>ناقش</option>
+                            <option value="DISMISSED" {% if research.status == "DISMISSED" %}selected{% endif %}>مفصول</option>
+                            <option value="CANCELLED" {% if research.status == "CANCELLED" %}selected{% endif %}>إلغاء</option>
+                            <option value="OTHER" {% if research.status == "OTHER" %}selected{% endif %}>أخرى</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status_note">ملاحظة الحالة</label>
+                        <input type="text" id="status_note" name="status_note" class="form-control" 
+                               value="{{ research.status_note }}" placeholder="مثال: ناقش بتاريخ...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- التواريخ -->
+            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                    <i class="ri-calendar-line"></i> التواريخ المهمة
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label for="registration_date">تاريخ التسجيل</label>
+                        <input type="date" id="registration_date" name="registration_date" class="form-control" 
+                               value="{{ research.registration_date|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="frame_date">تاريخ الإطار</label>
+                        <input type="date" id="frame_date" name="frame_date" class="form-control" 
+                               value="{{ research.frame_date|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="university_approval_date">تاريخ موافقة الجامعة</label>
+                        <input type="date" id="university_approval_date" name="university_approval_date" class="form-control" 
+                               value="{{ research.university_approval_date|date:'Y-m-d' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- المشرفين -->
+            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                    <i class="ri-user-star-line"></i> المشرفون
+                </h3>
+                
+                <div style="background: #fff; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;">
+                    {% for supervisor in all_supervisors %}
+                        <label style="display: flex; align-items: center; padding: 0.5rem; cursor: pointer; border-radius: 6px; margin-bottom: 0.25rem;">
+                            <input type="checkbox" name="supervisors" value="{{ supervisor.id }}" 
+                                   {% if supervisor.id in current_supervisors %}checked{% endif %}
+                                   style="margin-left: 10px;">
+                            <span>د. {{ supervisor.name }}</span>
+                            {% if supervisor.department %}
+                                <span style="margin-right: auto; color: var(--text-light); font-size: 0.9rem;">
+                                    {{ supervisor.department.name }}
+                                </span>
+                            {% endif %}
+                        </label>
+                    {% endfor %}
+                </div>
+                <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 0.5rem;">
+                    <i class="ri-information-line"></i> اختر مشرف واحد أو أكثر
+                </p>
+            </div>
+
+            <!-- الأزرار -->
+            <div class="modal-actions" style="margin-top: 2rem;">
+                <a href="/research/{{ research.id }}/" class="btn btn-secondary">
+                    <i class="ri-arrow-right-line"></i> إلغاء
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-save-line"></i> حفظ التعديلات
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+</footer>
+
+<style>
+label:has(input[type="checkbox"]):hover {
+    background: #f1f5f9;
+}
+textarea.form-control {
+    resize: vertical;
+    font-family: 'Cairo', sans-serif;
+}
+</style>
+
+</body>
+</html>

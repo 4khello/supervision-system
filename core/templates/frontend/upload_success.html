@@ -1,0 +1,92 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>نتائج رفع الملف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <div class="brand">
+            <div class="brand-logo">
+                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+            </div>
+            <div class="brand-text">
+                <h1>نتائج رفع الملف</h1>
+                <p>كلية علوم الرياضة - جامعة بنها</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="card" style="max-width: 900px; margin: 2rem auto;">
+        <div class="card-head" style="margin-bottom: 2rem;">
+            <div class="card-title">
+                <i class="ri-checkbox-circle-line" style="color: #16a34a;"></i>
+                تم رفع الملف بنجاح
+            </div>
+        </div>
+
+        {% if new_researchers %}
+            <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-right: 4px solid #16a34a;">
+                <h3 style="margin: 0 0 1rem 0; color: #15803d; font-size: 1rem;">
+                    <i class="ri-user-add-line"></i> العمليات الناجحة ({{ new_researchers|length }})
+                </h3>
+                <ul style="margin: 0; padding-right: 1.5rem; color: #166534; max-height: 400px; overflow-y: auto;">
+                    {% for result in new_researchers %}
+                        <li style="margin-bottom: 0.5rem;">{{ result }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if duplicates %}
+            <div style="background: #fffbeb; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-right: 4px solid #f59e0b;">
+                <h3 style="margin: 0 0 1rem 0; color: #92400e; font-size: 1rem;">
+                    <i class="ri-alert-line"></i> سجلات مكررة ({{ duplicates|length }})
+                </h3>
+                <ul style="margin: 0; padding-right: 1.5rem; color: #92400e; max-height: 300px; overflow-y: auto;">
+                    {% for dup in duplicates %}
+                        <li style="margin-bottom: 0.5rem;">{{ dup }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if errors %}
+            <div style="background: #fef2f2; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-right: 4px solid #dc2626;">
+                <h3 style="margin: 0 0 1rem 0; color: #991b1b; font-size: 1rem;">
+                    <i class="ri-error-warning-line"></i> الأخطاء ({{ errors|length }})
+                </h3>
+                <ul style="margin: 0; padding-right: 1.5rem; color: #7f1d1d; max-height: 300px; overflow-y: auto;">
+                    {% for error in errors %}
+                        <li style="margin-bottom: 0.5rem;">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="modal-actions" style="margin-top: 2rem;">
+            <a href="{% url 'upload_researchers' %}" class="btn btn-secondary">
+                <i class="ri-upload-cloud-line"></i> رفع ملف آخر
+            </a>
+            <a href="{% url 'supervisors_page' %}" class="btn btn-primary">
+                <i class="ri-arrow-left-line"></i> العودة للمشرفين
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+</footer>
+
+</body>
+</html>
