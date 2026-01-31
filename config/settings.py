@@ -13,6 +13,11 @@ ALLOWED_HOSTS = [
     for h in raw_hosts.replace("\n", ",").split(",")
     if h.strip()
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://supervision-system-production.up.railway.app",
+    "https://*.up.railway.app",
+]
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
