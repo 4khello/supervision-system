@@ -54,6 +54,10 @@ def home(request):
         excluded_statuses = [Research.Status.DISCUSSED, Research.Status.DISMISSED, Research.Status.CANCELLED]
         
         dept_supervisors = []
+        
+        # جمع كل IDs الباحثين في القسم لتجنب التكرار
+        all_dept_research_ids = set()
+        
         for supervisor in dept_supervisors_qs:
             # حساب إحصائيات كل مشرف - الحاليين فقط
             supervisor_researches = Research.objects.filter(
@@ -61,19 +65,22 @@ def home(request):
             ).exclude(status__in=excluded_statuses).distinct()
             
             # فقط الباحثين (بدون معيدين في الإجمالي)
-            ma_count = supervisor_researches.filter(
+            ma_researches = supervisor_researches.filter(
                 degree=Research.Degree.MA,
                 researcher_type=Research.ResearcherType.RESEARCHER
-            ).count()
+            )
+            ma_count = ma_researches.count()
             
-            phd_count = supervisor_researches.filter(
+            phd_researches = supervisor_researches.filter(
                 degree=Research.Degree.PHD,
                 researcher_type=Research.ResearcherType.RESEARCHER
-            ).count()
+            )
+            phd_count = phd_researches.count()
             
-            assistants_count = supervisor_researches.filter(
+            assistant_researches = supervisor_researches.filter(
                 researcher_type=Research.ResearcherType.ASSISTANT
-            ).count()
+            )
+            assistants_count = assistant_researches.count()
             
             # الإجمالي = ماجستير + دكتوراه فقط (بدون معيدين)
             total_count = ma_count + phd_count
@@ -84,17 +91,24 @@ def home(request):
             supervisor.total_count = total_count
             supervisor.research_count = total_count
             
+            # تجميع IDs لحساب الإجمالي الصحيح للقسم
+            all_dept_research_ids.update(ma_researches.values_list('id', flat=True))
+            all_dept_research_ids.update(phd_researches.values_list('id', flat=True))
+            all_dept_research_ids.update(assistant_researches.values_list('id', flat=True))
+            
             dept_supervisors.append(supervisor)
         
         # ترتيب حسب الإجمالي
         dept_supervisors = sorted(dept_supervisors, key=lambda x: x.total_count, reverse=True)
         
-        # حساب إجمالي القسم
+        # حساب إجمالي القسم (بدون تكرار)
+        all_dept_researches = Research.objects.filter(id__in=all_dept_research_ids)
+        
         dept_stats = {
-            'total': sum(s.total_count for s in dept_supervisors),
-            'phd': sum(s.phd_count for s in dept_supervisors),
-            'ma': sum(s.ma_count for s in dept_supervisors),
-            'assistants': sum(s.assistants_count for s in dept_supervisors),
+            'total': all_dept_researches.filter(researcher_type=Research.ResearcherType.RESEARCHER).count(),
+            'phd': all_dept_researches.filter(degree=Research.Degree.PHD, researcher_type=Research.ResearcherType.RESEARCHER).count(),
+            'ma': all_dept_researches.filter(degree=Research.Degree.MA, researcher_type=Research.ResearcherType.RESEARCHER).count(),
+            'assistants': all_dept_researches.filter(researcher_type=Research.ResearcherType.ASSISTANT).count(),
         }
     
     return render(request, "frontend/home.html", {
