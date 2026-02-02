@@ -135,6 +135,21 @@ class Research(models.Model):
         year = timezone.localdate().year
         return self.get_fees_status(year)
 
+    # ==================================================
+    # Backward-compat properties (لا تحتاج Migration)
+    # ==================================================
+    @property
+    def fees_paid(self) -> bool:
+        """حالة مصروفات السنة الحالية كـ True/False (بديل fees_paid القديم)."""
+        return self.get_current_year_fees_status() == "paid"
+
+    @property
+    def fees_paid_at(self):
+        """تاريخ دفع مصروفات السنة الحالية (بديل fees_paid_at القديم)."""
+        year = timezone.localdate().year
+        p = self.fee_payments.filter(year=int(year)).first()
+        return p.paid_at if (p and p.is_paid) else None
+
     class Meta:
         constraints = [
             models.UniqueConstraint(

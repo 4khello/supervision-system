@@ -486,8 +486,10 @@ def researchers_page(request):
     """صفحة الباحثين (بدون المعيدين)"""
     q = (request.GET.get("q") or "").strip()
     sf = (request.GET.get("sf") or "active").strip().lower()
-    date_from = request.GET.get("date_from", "").strip()
-    date_to = request.GET.get("date_to", "").strip()
+    # فلترة بالتاريخ (القيم جاية من <input type="date">)
+    date_from = (request.GET.get("date_from") or "").strip() or None
+    date_to   = (request.GET.get("date_to") or "").strip() or None
+
     excluded_for_active = [Research.Status.DISCUSSED, Research.Status.DISMISSED, Research.Status.CANCELLED]
 
     if sf == "discussed":
@@ -736,11 +738,19 @@ def edit_research(request, pk):
             research.frame_date = request.POST.get("frame_date") or None
             research.university_approval_date = request.POST.get("university_approval_date") or None
 
-            # مصروفات السنة الحالية
+            # مصروفات السنة الحالية (سجل سنوي في ResearchFeePayment)
             fees_paid = request.POST.get("fees_paid") == "on"
-            if fees_paid != research.fees_paid:
-                research.fees_paid = fees_paid
-                research.fees_paid_at = timezone.now() if fees_paid else None
+            current_year = timezone.localdate().year
+            payment, _ = ResearchFeePayment.objects.get_or_create(
+                research=research,
+                year=current_year,
+                defaults={"is_paid": False},
+            )
+            if fees_paid and not payment.is_paid:
+                payment.mark_paid()
+            elif (not fees_paid) and payment.is_paid:
+                payment.mark_unpaid()
+
 
             research.save()
 
@@ -808,9 +818,19 @@ def add_researcher(request):
                 registration_date=reg_date,
                 frame_date=frame_date,
                 university_approval_date=univ_date,
-                fees_paid=fees_paid,
-                fees_paid_at=timezone.now() if fees_paid else None,
             )
+
+            # مصروفات السنة الحالية (سجل سنوي في ResearchFeePayment)
+            current_year = timezone.localdate().year
+            payment, _ = ResearchFeePayment.objects.get_or_create(
+                research=research,
+                year=current_year,
+                defaults={"is_paid": False},
+            )
+            if fees_paid:
+                payment.mark_paid()
+            else:
+                payment.mark_unpaid()
 
             supervisor_ids = request.POST.getlist("supervisors")
             if supervisor_ids:
@@ -821,11 +841,15 @@ def add_researcher(request):
             try:
                 fees_data = json.loads(fees_data_str)  # {2025: true, 2024: false}
                 for year_str, is_paid in fees_data.items():
-                    ResearchFeePayment.objects.create(
+                    payment, _ = ResearchFeePayment.objects.get_or_create(
                         research=research,
                         year=int(year_str),
-                        is_paid=bool(is_paid)
+                        defaults={"is_paid": False},
                     )
+                    if bool(is_paid):
+                        payment.mark_paid()
+                    else:
+                        payment.mark_unpaid()
             except:
                 pass  # إذا مفيش مصروفات، عادي
             messages.success(request, f"تم إضافة الباحث: {researcher_name}")
