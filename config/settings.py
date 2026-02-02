@@ -3,16 +3,14 @@ import os
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Load .env locally فقط (لو موجود). Railway بيستخدم Variables من لوحة التحكم
-dotenv_path = BASE_DIR / ".env"
-if dotenv_path.exists():
-    load_dotenv(dotenv_path)
+load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
 
+# -------------------------
 # Hosts
+# -------------------------
 raw_hosts = os.getenv("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [
     h.strip().strip('"').strip("'")
@@ -20,10 +18,13 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
-# لو ALLOWED_HOSTS فاضي في Railway خليه يقبل الدومين بتاع Railway
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ["127.0.0.1", "localhost", ".up.railway.app"]
+# لو نسيت تحط ALLOWED_HOSTS على Railway
+if not ALLOWED_HOSTS and DEBUG:
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
+# -------------------------
+# CSRF (علشان 403 بتاع الفورمات)
+# -------------------------
 CSRF_TRUSTED_ORIGINS = [
     "https://supervision-system-production.up.railway.app",
     "https://*.up.railway.app",
@@ -41,7 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # لازم بعد SecurityMiddleware
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ لازم تبقى هنا بعد SecurityMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -73,7 +74,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+# -------------------------
 # Database
+# -------------------------
 DB_NAME = os.getenv("DB_NAME", "supervision_db")
 DB_USER = os.getenv("DB_USER", "root")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
@@ -105,25 +108,14 @@ USE_I18N = True
 USE_TZ = True
 
 # =========================
-# Static files (Railway)
+# Static files (WhiteNoise)
 # =========================
 STATIC_URL = "/static/"
-
-STATICFILES_DIRS = [
-    BASE_DIR / "core" / "static",
-]
-
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# ✅ مهم: بلاش STATICFILES_DIRS طالما ملفاتك داخل core/static
+# Django هيلمّها تلقائي من app directories
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-]
-
-# تحسين WhiteNoise
-WHITENOISE_MAX_AGE = 31536000  # سنة
-WHITENOISE_AUTOREFRESH = DEBUG  # في DEBUG بس
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -4,7 +4,8 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 import json
 
-from core.models import Research, Supervisor, ResearchSupervision, Department
+from django.utils import timezone
+from core.models import Research, Supervisor, ResearchSupervision, Department, ResearchFeePayment
 from core.exporters import build_export_workbook
 from datetime import datetime
 from urllib.parse import quote
@@ -254,16 +255,28 @@ def stat_details(request, stat_type):
 def research_detail(request, pk):
     """صفحة تفاصيل الباحث الكاملة"""
     research = get_object_or_404(
-        Research.objects.select_related('department').prefetch_related('researchsupervision_set__supervisor'),
+        Research.objects.select_related('department').prefetch_related(
+            'researchsupervision_set__supervisor',
+            'fee_payments'
+        ),
         pk=pk
     )
-    
+
     supervisors = [link.supervisor for link in research.researchsupervision_set.all()]
-    
+    current_year = timezone.now().year
+
+    # تأكد إن في سجل للسنة الحالية (افتراضي لم يدفع)
+    ResearchFeePayment.objects.get_or_create(research=research, year=current_year, defaults={"is_paid": False})
+
+    payments = list(research.fee_payments.all())  # مرتبة -year
+
     return render(request, "frontend/research_detail.html", {
         "research": research,
         "supervisors": supervisors,
+        "payments": payments,
+        "current_year": current_year,
     })
+
 
 
 def department_stats(request):
@@ -473,7 +486,8 @@ def researchers_page(request):
     """صفحة الباحثين (بدون المعيدين)"""
     q = (request.GET.get("q") or "").strip()
     sf = (request.GET.get("sf") or "active").strip().lower()
-    
+    date_from = request.GET.get("date_from", "").strip()
+    date_to = request.GET.get("date_to", "").strip()
     excluded_for_active = [Research.Status.DISCUSSED, Research.Status.DISMISSED, Research.Status.CANCELLED]
 
     if sf == "discussed":
@@ -488,12 +502,24 @@ def researchers_page(request):
         sf = "active"
         status_filter = ~Q(status__in=excluded_for_active)
 
-    researches = Research.objects.filter(researcher_type=Research.ResearcherType.RESEARCHER).filter(status_filter).prefetch_related('researchsupervision_set__supervisor', 'department').order_by('-id')
+    researches = (
+        Research.objects
+        .filter(researcher_type=Research.ResearcherType.RESEARCHER)
+        .filter(status_filter)
+        .prefetch_related("researchsupervision_set__supervisor", "department")
+        .order_by("-id")
+    )
 
     if q:
         researches = researches.filter(Q(researcher_name__icontains=q) | Q(title__icontains=q))
+    if date_from:
+        researches = researches.filter(registration_date__gte=date_from)
+    if date_to:
+        researches = researches.filter(registration_date__lte=date_to)
+    return render(request, "frontend/researchers.html", {"researches": researches, "q": q, "sf": sf, "date_from": date_from,  # ← جديد
+        "date_to": date_to, })
 
-    return render(request, "frontend/researchers.html", {"researches": researches, "q": q, "sf": sf})
+
 
 
 def supervisor_detail(request, pk: int):
@@ -690,7 +716,7 @@ def upload_researchers(request):
 def edit_research(request, pk):
     """تعديل بحث داخل النظام"""
     research = get_object_or_404(Research, pk=pk)
-    
+
     if request.method == "POST":
         try:
             research.researcher_name = request.POST.get("researcher_name", "").strip()
@@ -699,44 +725,51 @@ def edit_research(request, pk):
             research.researcher_type = request.POST.get("researcher_type")
             research.status = request.POST.get("status")
             research.status_note = request.POST.get("status_note", "").strip()
-            
+
             dept_id = request.POST.get("department")
             research.department_id = int(dept_id) if dept_id else None
-            
-            # ✅ التواريخ الـ 3
-            reg_date = request.POST.get("registration_date")
-            if reg_date: research.registration_date = reg_date
-                
-            frame_date = request.POST.get("frame_date")
-            if frame_date: research.frame_date = frame_date
-                
-            univ_date = request.POST.get("university_approval_date")
-            if univ_date: research.university_approval_date = univ_date
-            
+
+            research.phone = (request.POST.get("phone", "") or "").strip() or None
+
+            # التواريخ (نخليها تتحدث أو تتفضى)
+            research.registration_date = request.POST.get("registration_date") or None
+            research.frame_date = request.POST.get("frame_date") or None
+            research.university_approval_date = request.POST.get("university_approval_date") or None
+
+            # مصروفات السنة الحالية
+            fees_paid = request.POST.get("fees_paid") == "on"
+            if fees_paid != research.fees_paid:
+                research.fees_paid = fees_paid
+                research.fees_paid_at = timezone.now() if fees_paid else None
+
             research.save()
-            
+
             supervisor_ids = request.POST.getlist("supervisors")
-            if supervisor_ids:
+            if supervisor_ids is not None:
                 ResearchSupervision.objects.filter(research=research).delete()
                 for sup_id in supervisor_ids:
                     supervisor = Supervisor.objects.get(id=int(sup_id))
                     ResearchSupervision.objects.create(research=research, supervisor=supervisor)
-            
+
             messages.success(request, f"تم تحديث {research.researcher_name}")
             return redirect("dashboard")
-            
+
         except Exception as e:
             messages.error(request, f"خطأ: {str(e)}")
-    
+
     all_supervisors = Supervisor.objects.filter(is_active=True).order_by("name")
     all_departments = Department.objects.all().order_by("name")
     current_supervisors = [link.supervisor.id for link in research.researchsupervision_set.all()]
-    
+    current_year = timezone.now().year
+    ResearchFeePayment.objects.get_or_create(research=research, year=current_year, defaults={"is_paid": False})
+    payments = list(research.fee_payments.all().order_by('-year'))
+
     return render(request, "frontend/edit_research.html", {
         "research": research,
         "all_supervisors": all_supervisors,
         "all_departments": all_departments,
         "current_supervisors": current_supervisors,
+        "payments": payments,
     })
 
 
@@ -751,12 +784,18 @@ def add_researcher(request):
             status = request.POST.get("status")
             status_note = request.POST.get("status_note", "").strip()
             dept_id = request.POST.get("department")
-            
+
+            phone = (request.POST.get("phone", "") or "").strip() or None
+            fees_paid = request.POST.get("fees_paid") == "on"
+
+            reg_date = request.POST.get("registration_date") or None
+            frame_date = request.POST.get("frame_date") or None
+            univ_date = request.POST.get("university_approval_date") or None
+
             if not researcher_name:
                 messages.error(request, "يجب إدخال اسم الباحث")
                 return redirect("add_researcher")
-            
-            # إنشاء الباحث
+
             research = Research.objects.create(
                 researcher_name=researcher_name,
                 degree=degree,
@@ -765,38 +804,40 @@ def add_researcher(request):
                 status=status,
                 status_note=status_note,
                 department_id=int(dept_id) if dept_id else None,
+                phone=phone,
+                registration_date=reg_date,
+                frame_date=frame_date,
+                university_approval_date=univ_date,
+                fees_paid=fees_paid,
+                fees_paid_at=timezone.now() if fees_paid else None,
             )
-            
-            # التواريخ
-            reg_date = request.POST.get("registration_date")
-            if reg_date: research.registration_date = reg_date
-            
-            frame_date = request.POST.get("frame_date")
-            if frame_date: research.frame_date = frame_date
-            
-            univ_date = request.POST.get("university_approval_date")
-            if univ_date: research.university_approval_date = univ_date
-            
-            research.save()
-            
-            # المشرفين
+
             supervisor_ids = request.POST.getlist("supervisors")
             if supervisor_ids:
                 for sup_id in supervisor_ids:
                     supervisor = Supervisor.objects.get(id=int(sup_id))
                     ResearchSupervision.objects.create(research=research, supervisor=supervisor)
-            
+            fees_data_str = request.POST.get("fees_data", "{}")
+            try:
+                fees_data = json.loads(fees_data_str)  # {2025: true, 2024: false}
+                for year_str, is_paid in fees_data.items():
+                    ResearchFeePayment.objects.create(
+                        research=research,
+                        year=int(year_str),
+                        is_paid=bool(is_paid)
+                    )
+            except:
+                pass  # إذا مفيش مصروفات، عادي
             messages.success(request, f"تم إضافة الباحث: {researcher_name}")
             return redirect("researchers_page")
-            
+
         except Exception as e:
             messages.error(request, f"خطأ: {str(e)}")
             return redirect("add_researcher")
-    
-    # GET request
+
     all_supervisors = Supervisor.objects.filter(is_active=True).order_by("name")
     all_departments = Department.objects.all().order_by("name")
-    
+
     return render(request, "frontend/add_researcher.html", {
         "all_supervisors": all_supervisors,
         "all_departments": all_departments,
@@ -863,3 +904,125 @@ def delete_supervisor(request, pk):
     
     messages.success(request, f"تم حذف المشرف: {name}")
     return redirect("supervisors_page")
+
+
+# ═══════════════════════════════════════════════════════════
+# إدارة المصروفات
+# ═══════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════
+# إدارة المصروفات (سنوية) - باستخدام ResearchFeePayment
+# ═══════════════════════════════════════════════════════════
+
+from django.utils import timezone
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from core.models import Research, ResearchFeePayment
+
+def toggle_fees_status(request, research_id, year):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    research = get_object_or_404(Research, id=research_id)
+    year = int(year)
+
+    payment, _ = ResearchFeePayment.objects.get_or_create(
+        research=research,
+        year=year,
+        defaults={"is_paid": False},
+    )
+
+    if payment.is_paid:
+        payment.mark_unpaid()
+        status = "unpaid"
+    else:
+        payment.mark_paid()
+        status = "paid"
+
+    return JsonResponse({
+        "success": True,
+        "year": year,
+        "status": status,
+        "status_display": "دفع" if status == "paid" else "لم يدفع",
+    })
+
+
+def add_fees_year(request, research_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    research = get_object_or_404(Research, id=research_id)
+    year_raw = (request.POST.get("year") or "").strip()
+
+    if not year_raw.isdigit():
+        return JsonResponse({"error": "Year is required"}, status=400)
+
+    year = int(year_raw)
+
+    payment, created = ResearchFeePayment.objects.get_or_create(
+        research=research,
+        year=year,
+        defaults={"is_paid": False},
+    )
+
+    return JsonResponse({
+        "success": True,
+        "created": created,
+        "year": year,
+        "status": "paid" if payment.is_paid else "unpaid",
+        "status_display": "دفع" if payment.is_paid else "لم يدفع",
+    })
+def delete_fees_year(request, research_id, year):
+    """حذف سنة من المصروفات"""
+    if request.method != "POST":
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    research = get_object_or_404(Research, id=research_id)
+    
+    # حذف السنة
+    deleted_count, _ = ResearchFeePayment.objects.filter(
+        research=research, 
+        year=int(year)
+    ).delete()
+    
+    if deleted_count > 0:
+        return JsonResponse({
+            'success': True,
+            'year': year,
+            'message': f'تم حذف سنة {year} بنجاح'
+        })
+    else:
+        return JsonResponse({
+            'success': False,
+            'error': 'السنة غير موجودة'
+        }, status=404)
+
+
+# ═══════════════════════════════════════════════════════════
+# تعديل المشرف (بدون email/phone/image)
+# ═══════════════════════════════════════════════════════════
+
+def edit_supervisor(request, supervisor_id):
+    """تعديل بيانات المشرف (بدون email/phone)"""
+    supervisor = get_object_or_404(Supervisor, id=supervisor_id)
+
+    if request.method == "POST":
+        try:
+            supervisor.name = (request.POST.get("name", "") or "").strip() or supervisor.name
+
+            dept_id = request.POST.get("department_id")
+            supervisor.department_id = int(dept_id) if dept_id else None
+
+            supervisor.is_active = request.POST.get("is_active") == "on"
+
+            supervisor.save()
+            messages.success(request, "تم تحديث بيانات المشرف بنجاح")
+            return redirect("supervisor_detail", pk=supervisor_id)
+        except Exception as e:
+            messages.error(request, f"خطأ: {str(e)}")
+
+    departments = Department.objects.all().order_by("name")
+    return render(request, "frontend/edit_supervisor.html", {
+        "supervisor": supervisor,
+        "departments": departments
+    })

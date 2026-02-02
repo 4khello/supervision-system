@@ -8,6 +8,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+    <style>
+    .badge {
+      display:inline-flex; align-items:center; gap:.35rem;
+      padding:.3rem .6rem; border-radius:999px; font-size:.9rem; font-weight:600;
+    }
+    .badge-paid { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+    .badge-unpaid { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+    
+    .fees-section {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    
+    .fees-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .fees-card {
+      background: #fff;
+      padding: 1.25rem;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .year-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem;
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 0.65rem;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .delete-year-btn {
+      padding: 0.5rem 1rem;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: 'Cairo', sans-serif;
+    }
+    
+    .delete-year-btn:hover {
+      background: #fecaca;
+    }
+    
+    @media (max-width: 768px) {
+      .fees-grid { grid-template-columns: 1fr; }
+    }
+    </style>
 </head>
 <body>
 
@@ -40,9 +100,9 @@
         {% if messages %}
             <div style="margin-bottom: 1.5rem;">
                 {% for message in messages %}
-                    <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %}; 
-                                padding: 1rem; 
-                                border-radius: 8px; 
+                    <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %};
+                                padding: 1rem;
+                                border-radius: 8px;
                                 border-right: 4px solid {% if message.tags == 'error' %}#dc2626{% else %}#16a34a{% endif %};">
                         {{ message }}
                     </div>
@@ -50,15 +110,14 @@
             </div>
         {% endif %}
 
-        <form method="post">
+        <form method="post" id="addResearcherForm">
             {% csrf_token %}
-            
-            <!-- المعلومات الأساسية -->
+
             <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
                     <i class="ri-user-line"></i> المعلومات الأساسية
                 </h3>
-                
+
                 <div class="form-group">
                     <label for="researcher_name">اسم الباحث <span style="color: red;">*</span></label>
                     <input type="text" id="researcher_name" name="researcher_name" class="form-control" required>
@@ -72,7 +131,7 @@
                             <option value="PHD">دكتوراه</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="researcher_type">النوع <span style="color: red;">*</span></label>
                         <select id="researcher_type" name="researcher_type" class="form-control" required>
@@ -83,9 +142,13 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="phone">رقم الهاتف</label>
+                    <input type="text" id="phone" name="phone" class="form-control" placeholder="مثال: 010xxxxxxxx">
+                </div>
+
+                <div class="form-group">
                     <label for="title">عنوان الرسالة</label>
-                    <textarea id="title" name="title" class="form-control" rows="3" 
-                              placeholder="اكتب عنوان الرسالة..."></textarea>
+                    <textarea id="title" name="title" class="form-control" rows="3" placeholder="اكتب عنوان الرسالة..."></textarea>
                 </div>
 
                 <div class="form-group">
@@ -99,12 +162,11 @@
                 </div>
             </div>
 
-            <!-- الحالة -->
             <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
                     <i class="ri-flag-line"></i> الحالة
                 </h3>
-                
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label for="status">الحالة <span style="color: red;">*</span></label>
@@ -119,18 +181,16 @@
 
                     <div class="form-group">
                         <label for="status_note">ملاحظة الحالة</label>
-                        <input type="text" id="status_note" name="status_note" class="form-control" 
-                               placeholder="مثال: مسجل بتاريخ...">
+                        <input type="text" id="status_note" name="status_note" class="form-control" placeholder="مثال: مسجل بتاريخ...">
                     </div>
                 </div>
             </div>
 
-            <!-- التواريخ -->
             <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
                     <i class="ri-calendar-line"></i> التواريخ المهمة
                 </h3>
-                
+
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                     <div class="form-group">
                         <label for="registration_date">تاريخ التسجيل</label>
@@ -149,24 +209,21 @@
                 </div>
             </div>
 
-            <!-- المشرفين -->
             <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
                     <i class="ri-user-star-line"></i> المشرفون <span style="color: red;">*</span>
                 </h3>
-                
-                <!-- بحث في المشرفين -->
+
                 <div style="margin-bottom: 1rem;">
-                    <input type="text" id="supervisorSearch" class="form-control" 
-                           placeholder="🔍 ابحث عن مشرف..." 
+                    <input type="text" id="supervisorSearch" class="form-control"
+                           placeholder="🔍 ابحث عن مشرف..."
                            onkeyup="filterSupervisors()">
                 </div>
-                
+
                 <div style="background: #fff; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;" id="supervisorsList">
                     {% for supervisor in all_supervisors %}
                         <label class="supervisor-item" style="display: flex; align-items: center; padding: 0.5rem; cursor: pointer; border-radius: 6px; margin-bottom: 0.25rem;">
-                            <input type="checkbox" name="supervisors" value="{{ supervisor.id }}" 
-                                   style="margin-left: 10px;">
+                            <input type="checkbox" name="supervisors" value="{{ supervisor.id }}" style="margin-left: 10px;">
                             <span class="supervisor-name">د. {{ supervisor.name }}</span>
                             {% if supervisor.department %}
                                 <span style="margin-right: auto; color: var(--text-light); font-size: 0.9rem;">
@@ -176,12 +233,15 @@
                         </label>
                     {% endfor %}
                 </div>
+
                 <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 0.5rem;">
                     <i class="ri-information-line"></i> اختر مشرف واحد أو أكثر
                 </p>
             </div>
 
-            <!-- الأزرار -->
+            <!-- حقل مخفي للمصروفات -->
+            <input type="hidden" id="fees_data" name="fees_data" value="">
+
             <div class="modal-actions" style="margin-top: 2rem;">
                 <a href="{% url 'researchers_page' %}" class="btn btn-secondary">
                     <i class="ri-arrow-right-line"></i> إلغاء
@@ -191,6 +251,51 @@
                 </button>
             </div>
         </form>
+
+        <!-- ✅ إدارة المصروفات (بعد النموذج - تفاعلي فقط) -->
+        <div class="fees-section">
+            <h3 style="margin: 0 0 1.5rem 0; color: var(--primary-color);">
+                <i class="ri-money-dollar-circle-line"></i> تحديد المصروفات السنوية (اختياري)
+            </h3>
+
+            <div style="background: #eff6ff; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; border-right: 3px solid #3b82f6;">
+                <i class="ri-information-line" style="color: #3b82f6;"></i>
+                <strong>ملاحظة:</strong> يمكنك تحديد المصروفات الآن أو إضافتها لاحقاً من صفحة تفاصيل الباحث.
+            </div>
+
+            <div class="fees-grid">
+                <div class="fees-card">
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.75rem;">
+                        <i class="ri-add-circle-line"></i> إضافة سنة
+                    </label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="number" id="addYearInput" class="form-control" placeholder="مثال: 2025" min="2000" max="2100">
+                        <button type="button" class="btn btn-secondary" onclick="addYear()">
+                            <i class="ri-add-line"></i> إضافة
+                        </button>
+                    </div>
+                </div>
+
+                <div class="fees-card">
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.75rem;">
+                        <i class="ri-refresh-line"></i> تبديل حالة سنة
+                    </label>
+                    <select id="toggleYearSelect" class="form-control">
+                        <option value="">-- اختر سنة --</option>
+                    </select>
+                    <button type="button" class="btn btn-primary" onclick="toggleYear()" style="width: 100%; margin-top: 0.5rem;">
+                        <i class="ri-refresh-line"></i> تبديل
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <strong style="color: #0c4a6e;">السنوات المضافة:</strong>
+                <div id="yearsList" style="margin-top: 1rem;">
+                    <p style="color: #94a3b8; text-align: center; padding: 2rem 0;">لم تتم إضافة سنوات بعد</p>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 
@@ -200,33 +305,101 @@
 
 <style>
 label:has(input[type="checkbox"]):hover,
-.supervisor-item:hover {
-    background: #f1f5f9;
-}
-textarea.form-control {
-    resize: vertical;
-    font-family: 'Cairo', sans-serif;
-}
+.supervisor-item:hover { background: #f1f5f9; }
+textarea.form-control { resize: vertical; font-family: 'Cairo', sans-serif; }
 </style>
 
 <script>
+// بحث المشرفين
 function filterSupervisors() {
     const input = document.getElementById('supervisorSearch');
     const filter = input.value.toLowerCase();
     const list = document.getElementById('supervisorsList');
     const items = list.getElementsByClassName('supervisor-item');
-    
+
     for (let i = 0; i < items.length; i++) {
         const name = items[i].getElementsByClassName('supervisor-name')[0];
         const txtValue = name.textContent || name.innerText;
-        
-        if (txtValue.toLowerCase().indexOf(filter) > -1) {
-            items[i].style.display = "flex";
-        } else {
-            items[i].style.display = "none";
-        }
+        items[i].style.display = (txtValue.toLowerCase().indexOf(filter) > -1) ? "flex" : "none";
     }
 }
+
+// إدارة المصروفات (تفاعلي)
+const feesMap = {};
+
+function addYear() {
+    const year = (document.getElementById('addYearInput').value || '').trim();
+    if (!year) return alert('اكتب السنة');
+    if (year < 2000 || year > 2100) return alert('السنة يجب أن تكون بين 2000 و 2100');
+    if (feesMap[year] !== undefined) return alert('السنة مضافة بالفعل');
+    
+    feesMap[year] = false; // لم يدفع افتراضياً
+    refreshYearsList();
+    document.getElementById('addYearInput').value = '';
+}
+
+function toggleYear() {
+    const year = document.getElementById('toggleYearSelect').value;
+    if (!year) return alert('اختر سنة');
+    
+    feesMap[year] = !feesMap[year];
+    refreshYearsList();
+}
+
+function deleteYear(year) {
+    if (!confirm(`هل تريد حذف سنة ${year}؟`)) return;
+    delete feesMap[year];
+    refreshYearsList();
+}
+
+function refreshYearsList() {
+    const years = Object.keys(feesMap).sort((a,b) => Number(b) - Number(a));
+    const list = document.getElementById('yearsList');
+    const select = document.getElementById('toggleYearSelect');
+    
+    // تحديث القائمة
+    if (years.length === 0) {
+        list.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 2rem 0;">لم تتم إضافة سنوات بعد</p>';
+    } else {
+        list.innerHTML = '';
+        years.forEach(y => {
+            const paid = feesMap[y];
+            const cls = paid ? 'badge-paid' : 'badge-unpaid';
+            const icon = paid ? 'ri-check-line' : 'ri-close-line';
+            const txt = paid ? 'دفع' : 'لم يدفع';
+            
+            const div = document.createElement('div');
+            div.className = 'year-item';
+            div.innerHTML = `
+                <span class="badge ${cls}">
+                    ${y} — <i class="${icon}"></i> ${txt}
+                </span>
+                <button type="button" class="delete-year-btn" onclick="deleteYear(${y})">
+                    <i class="ri-delete-bin-line"></i> حذف
+                </button>
+            `;
+            list.appendChild(div);
+        });
+    }
+    
+    // تحديث السلكت
+    select.innerHTML = '<option value="">-- اختر سنة --</option>';
+    years.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        select.appendChild(opt);
+    });
+    
+    // تحديث الحقل المخفي
+    document.getElementById('fees_data').value = JSON.stringify(feesMap);
+}
+
+// عند submit النموذج
+document.getElementById('addResearcherForm').addEventListener('submit', function(e) {
+    // تحديث الحقل المخفي قبل الإرسال
+    document.getElementById('fees_data').value = JSON.stringify(feesMap);
+});
 </script>
 
 </body>

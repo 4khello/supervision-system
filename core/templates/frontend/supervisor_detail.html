@@ -97,6 +97,9 @@
             <a href="/export.xlsx?supervisor_id={{ supervisor.id }}&sf={{ sf }}" class="btn btn-secondary">
                 <i class="ri-file-excel-line"></i> تصدير Excel
             </a>
+            <a href="{% url 'edit_supervisor' supervisor.id %}" class="btn" style="background: #f59e0b; color: white;">
+                <i class="ri-edit-line"></i> تعديل البيانات
+            </a>
             <a href="/supervisors/" class="btn btn-secondary">
                 <i class="ri-arrow-right-line"></i> رجوع
             </a>
@@ -130,6 +133,7 @@
                     <th>المرحلة</th>
                     <th class="hide-on-print">الحالة</th>
                     <th class="show-on-print" style="display: none;">تاريخ التسجيل</th>
+                    <th class="show-on-print" style="display: none;">رقم الهاتف</th>
                     <th>العنوان</th>
                     <th>المشرفون المشتركون</th>
                 </tr>
@@ -170,6 +174,9 @@
                     <td class="show-on-print" style="display: none;">
                         {{ it.research.registration_date|date:"d/m/Y"|default:"—" }}
                     </td>
+                    <td class="show-on-print" style="display: none;">
+                        {{ it.research.phone|default:"—" }}
+                    </td>
                     <td style="max-width: 300px; color: var(--text-light);">{{ it.research.title|default:"—" }}</td>
                     <td>
                         {% if it.co_supervisors %}
@@ -188,10 +195,6 @@
         </table>
     </section>
 </main>
-
-<footer>
-    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
-</footer>
 
 <footer>
     <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>

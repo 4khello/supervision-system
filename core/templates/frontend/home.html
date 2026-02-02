@@ -221,13 +221,18 @@ new Chart(ctx, {
                 label: 'ماجستير',
                 data: [{% for supervisor in dept_supervisors %}{{ supervisor.ma_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
                 backgroundColor: '#64748b'
+            },
+            {
+                label: 'معيدين',
+                data: [{% for supervisor in dept_supervisors %}{{ supervisor.assistants_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#f59e0b'
             }
         ]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        indexAxis: 'y',  // رسم أفقي
+        indexAxis: 'y',
         plugins: {
             legend: {
                 display: true,
@@ -263,10 +268,8 @@ function showStatDetails(statType) {
     const modalTitle = document.getElementById('modalTitle');
     const modalContent = document.getElementById('modalContent');
     
-    // عرض Modal
     modal.style.display = 'flex';
     
-    // تحديد العنوان
     const titles = {
         'ma_current': 'ماجستير (الحاليين)',
         'phd_current': 'دكتوراه (الحاليين)',
@@ -275,7 +278,6 @@ function showStatDetails(statType) {
     };
     modalTitle.textContent = titles[statType] || 'التفاصيل';
     
-    // جلب البيانات
     fetch(`/api/home-stat-details/${statType}/`)
         .then(response => response.json())
         .then(data => {
@@ -312,7 +314,6 @@ function closeStatModal() {
     document.getElementById('statModal').style.display = 'none';
 }
 
-// إضافة hover effect للكروت
 document.querySelectorAll('.stat-card[onclick]').forEach(card => {
     card.addEventListener('mouseenter', function() {
         this.style.transform = 'translateY(-5px)';

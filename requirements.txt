@@ -1,9 +1,7 @@
 Django>=5.0,<6.0
-gunicorn==24.1.1
-whitenoise==6.7.0
-
 mysqlclient>=2.2.0
-python-dotenv>=1.0.1
-
 pandas>=2.1.0
 openpyxl>=3.1.2
+python-dotenv>=1.0.1
+gunicorn>=24.0.0
+whitenoise==6.7.0

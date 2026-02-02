@@ -2,7 +2,6 @@
 # file: core/models.py
 # =========================================
 import hashlib
-
 from django.db import models
 from django.utils import timezone
 
@@ -17,7 +16,6 @@ class Department(models.Model):
 class Supervisor(models.Model):
     name = models.CharField(max_length=255, db_index=True)
 
-    # ✅ القسم في الشيت بتاع "المشرف" (مش الباحث)
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,
@@ -51,11 +49,8 @@ class Research(models.Model):
 
     researcher_name = models.CharField(max_length=255, db_index=True)
 
-    # ✅ العنوان طويل: نخليه TextField (بدون index/unique مباشر)
     title = models.TextField(blank=True)
 
-    # ✅ بديل آمن لـ MySQL للـ index/unique: hash ثابت الطول
-    # ملاحظة: نخليه blank=True عشان لو العنوان فاضي يبقى hash فاضي بدون مشاكل
     title_hash = models.CharField(
         max_length=64,
         db_index=True,
@@ -65,7 +60,6 @@ class Research(models.Model):
         verbose_name="بصمة العنوان",
     )
 
-    # ✅ قسم الباحث (مطلوب يفضل فاضي دلوقتي)
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,
@@ -77,7 +71,6 @@ class Research(models.Model):
 
     degree = models.CharField(max_length=10, choices=Degree.choices, db_index=True)
 
-    # ✅ النوع من الشيت: باحث / معيد
     researcher_type = models.CharField(
         max_length=20,
         choices=ResearcherType.choices,
@@ -86,9 +79,13 @@ class Research(models.Model):
         verbose_name="النوع",
     )
 
-    registration_date = models.DateField(null=True, blank=True)
-    frame_date = models.DateField(null=True, blank=True)
-    university_approval_date = models.DateField(null=True, blank=True)
+    # ✅ رقم الهاتف
+    phone = models.CharField("رقم الهاتف", max_length=20, blank=True, null=True)
+
+    # ✅ التواريخ (مرة واحدة وبأسماء موحدة)
+    registration_date = models.DateField("تاريخ التسجيل", blank=True, null=True)
+    frame_date = models.DateField("تاريخ الإطار", blank=True, null=True)
+    university_approval_date = models.DateField("تاريخ موافقة الجامعة", blank=True, null=True)
 
     status = models.CharField(
         max_length=20,
@@ -109,17 +106,36 @@ class Research(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        """
-        ✅ نحسب hash ثابت للعنوان بعد trim.
-        - لو العنوان فاضي: نخلي title_hash فاضي (بدل ما نعمل sha256 لنص فاضي)
-        """
         t = (self.title or "").strip()
         self.title_hash = hashlib.sha256(t.encode("utf-8")).hexdigest() if t else ""
         super().save(*args, **kwargs)
 
+    # =========================
+    # المصروفات السنوية (Helpers)
+    # =========================
+    def _prefetched_fee_payments(self):
+        cache = getattr(self, "_prefetched_objects_cache", {})
+        return cache.get("fee_payments")
+
+    def get_fees_status(self, year: int) -> str:
+        """
+        يرجع: 'paid' أو 'unpaid'
+        """
+        pref = self._prefetched_fee_payments()
+        if pref is not None:
+            for p in pref:
+                if p.year == int(year):
+                    return "paid" if p.is_paid else "unpaid"
+            return "unpaid"
+
+        p = self.fee_payments.filter(year=int(year)).first()
+        return "paid" if (p and p.is_paid) else "unpaid"
+
+    def get_current_year_fees_status(self) -> str:
+        year = timezone.localdate().year
+        return self.get_fees_status(year)
+
     class Meta:
-        # ✅ يمنع تكرار نفس الباحث/العنوان/المرحلة/النوع حتى لو الشيت مكرر
-        # ⚠️ بدل title (TextField) هنستخدم title_hash
         constraints = [
             models.UniqueConstraint(
                 fields=["researcher_name", "title_hash", "degree", "researcher_type"],
@@ -153,3 +169,41 @@ class ResearchSupervision(models.Model):
 
     def __str__(self) -> str:
         return f"{self.research_id} -> {self.supervisor} ({self.role})"
+
+
+class ResearchFeePayment(models.Model):
+    """
+    ✅ مصروفات سنوية لكل باحث
+    - لكل (باحث + سنة) سجل واحد
+    """
+    research = models.ForeignKey(
+        Research,
+        on_delete=models.CASCADE,
+        related_name="fee_payments",
+        verbose_name="الباحث",
+    )
+    year = models.PositiveIntegerField("السنة")
+    is_paid = models.BooleanField("تم الدفع", default=False)
+    paid_at = models.DateTimeField("تاريخ الدفع", blank=True, null=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["research", "year"], name="uniq_research_fee_year"),
+        ]
+        ordering = ["-year"]
+
+    def mark_paid(self):
+        self.is_paid = True
+        self.paid_at = timezone.now()
+        self.save(update_fields=["is_paid", "paid_at", "updated_at"])
+
+    def mark_unpaid(self):
+        self.is_paid = False
+        self.paid_at = None
+        self.save(update_fields=["is_paid", "paid_at", "updated_at"])
+
+    def __str__(self):
+        return f"{self.research} - {self.year} - {'Paid' if self.is_paid else 'Unpaid'}"
