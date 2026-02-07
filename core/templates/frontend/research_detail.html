@@ -226,10 +226,21 @@
         <p>كلية علوم الرياضة - جامعة بنها</p>
       </div>
     </div>
-    <div class="user-profile">
-      <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
-      <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
-    </div>
+     <div class="user-profile" {% if not user.is_superuser %}style="cursor: default;" {% endif %}>
+                {% if user.is_superuser %}
+                <span class="user-name">د. أحمد خليل</span>
+                <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+                {% else %}
+                {% if user.department_user %}
+                <span class="user-name">{{ user.department_user.department.name }}</span>
+                {% else %}
+                <span class="user-name">{{ user.username }}</span>
+                {% endif %}
+                {% endif %}
+                <a href="{% url 'frontend_logout' %}" class="btn btn-secondary" style="margin-right:10px;">
+                    <i class="ri-logout-box-r-line"></i> خروج
+                </a>
+      </div>
   </div>
 </header>
 

@@ -4,6 +4,7 @@
 import hashlib
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 class Department(models.Model):
@@ -222,3 +223,14 @@ class ResearchFeePayment(models.Model):
 
     def __str__(self):
         return f"{self.research} - {self.year} - {'Paid' if self.is_paid else 'Unpaid'}"
+
+
+class DepartmentUser(models.Model):
+    """
+    Extensions to the User model to link a user to a specific Department.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='department_user')
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='users')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.department.name}"

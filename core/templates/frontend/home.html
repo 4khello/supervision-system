@@ -1,341 +1,410 @@
-{% load static %}
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>إشرافات الدراسات العليا</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
-</head>
-<body>
+    {% load static %}
+    <!doctype html>
+    <html lang="ar" dir="rtl">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>إشرافات الدراسات العليا</title>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+    </head>
+    <body>
 
-<header>
-    <div class="header-container">
-        <div class="brand">
-            <div class="brand-logo">
-                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
-            </div>
-            <div class="brand-text">
-                <h1>إشرافات الدراسات العليا</h1>
-                <p>كلية علوم الرياضة - جامعة بنها</p>
-            </div>
-        </div>
-        <div class="user-profile">
-            <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
-            <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
-        </div>
-    </div>
-</header>
-
-<main>
-    <!-- الإحصائيات -->
-    <section class="stats-grid">
-        <div class="stat-card" onclick="showStatDetails('ma_current')" style="cursor: pointer; transition: transform 0.2s;">
-            <div class="stat-info">
-                <h3>ماجستير (الحاليين)</h3>
-                <p>{{ ma_current }}</p>
-            </div>
-            <div class="stat-icon"><i class="ri-award-line"></i></div>
-        </div>
-        
-        <div class="stat-card" onclick="showStatDetails('phd_current')" style="cursor: pointer; transition: transform 0.2s; border-right-color: #6366f1;">
-            <div class="stat-info">
-                <h3>دكتوراه (الحاليين)</h3>
-                <p>{{ phd_current }}</p>
-            </div>
-            <div class="stat-icon" style="color: #6366f1;"><i class="ri-graduation-cap-line"></i></div>
-        </div>
-        
-        <div class="stat-card" onclick="showStatDetails('discussed')" style="cursor: pointer; transition: transform 0.2s; border-right-color: #22c55e;">
-            <div class="stat-info">
-                <h3>ناقش</h3>
-                <p>{{ discussed_count }}</p>
-            </div>
-            <div class="stat-icon" style="color: #22c55e;"><i class="ri-check-line"></i></div>
-        </div>
-        
-        <div class="stat-card" onclick="showStatDetails('dismissed')" style="cursor: pointer; transition: transform 0.2s; border-right-color: #ef4444;">
-            <div class="stat-info">
-                <h3>مفصول</h3>
-                <p>{{ dismissed_count }}</p>
-            </div>
-            <div class="stat-icon" style="color: #ef4444;"><i class="ri-user-unfollow-line"></i></div>
-        </div>
-    </section>
-
-    <!-- اختيار العرض -->
-    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
-        <a href="{% url 'supervisors_page' %}" class="card" style="text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
-            <div style="text-align: center; padding: 2rem;">
-                <div style="width: 100px; height: 100px; margin: 0 auto 1.5rem; background: linear-gradient(135deg, #1a4f9c, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="ri-user-star-line" style="font-size: 3rem; color: white;"></i>
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-logo">
+                    <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
                 </div>
-                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">عرض المشرفين</h2>
-                <p style="color: var(--text-light); margin: 0;">استعراض قائمة المشرفين وإحصائياتهم</p>
-            </div>
-        </a>
-
-        <a href="{% url 'researchers_page' %}" class="card" style="text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
-            <div style="text-align: center; padding: 2rem;">
-                <div style="width: 100px; height: 100px; margin: 0 auto 1.5rem; background: linear-gradient(135deg, #f59e0b, #f97316); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="ri-group-line" style="font-size: 3rem; color: white;"></i>
-                </div>
-                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">عرض الباحثين</h2>
-                <p style="color: var(--text-light); margin: 0;">استعراض قائمة الباحثين والمعيدين</p>
-            </div>
-        </a>
-    </section>
-
-    <!-- إحصائيات الأقسام -->
-    <section class="card" style="margin-top: 2rem;">
-        <div class="card-head">
-            <div class="card-title">
-                <i class="ri-building-line"></i> إحصائيات الأقسام
-            </div>
-        </div>
-        
-        <form method="get" action="{% url 'home_department_stats' %}" style="margin-bottom: 1.5rem;">
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <select name="dept_id" class="form-control" style="flex: 1; max-width: 400px;">
-                    <option value="">-- اختر القسم --</option>
-                    {% for dept in departments %}
-                        <option value="{{ dept.id }}" {% if selected_dept and selected_dept.id == dept.id %}selected{% endif %}>
-                            {{ dept.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="btn btn-primary">
-                    <i class="ri-search-line"></i> عرض
-                </button>
-            </div>
-        </form>
-
-        {% if selected_dept %}
-            <!-- معلومات القسم -->
-            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">{{ selected_dept.name }}</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">{{ dept_stats.total }}</div>
-                        <div style="color: var(--text-light); font-size: 0.9rem;">إجمالي</div>
-                    </div>
-                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
-                        <div style="font-size: 2rem; font-weight: bold; color: #6366f1;">{{ dept_stats.phd }}</div>
-                        <div style="color: var(--text-light); font-size: 0.9rem;">دكتوراه</div>
-                    </div>
-                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
-                        <div style="font-size: 2rem; font-weight: bold; color: #64748b;">{{ dept_stats.ma }}</div>
-                        <div style="color: var(--text-light); font-size: 0.9rem;">ماجستير</div>
-                    </div>
-                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
-                        <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">{{ dept_stats.assistants }}</div>
-                        <div style="color: var(--text-light); font-size: 0.9rem;">معيدين</div>
-                    </div>
+                <div class="brand-text">
+                    <h1>إشرافات الدراسات العليا</h1>
+                    <p>كلية علوم الرياضة - جامعة بنها</p>
                 </div>
             </div>
-
-            <!-- رسم بياني -->
-            <div style="position: relative; height: 400px; margin-bottom: 1.5rem;">
-                <canvas id="deptChart"></canvas>
+            <div class="user-profile">
+                {% if is_admin %}
+                    <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
+                    <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+                {% else %}
+                    <span style="font-size: 0.9rem; font-weight: 600;">
+                        {{ dept_restriction.name|default:request.user.username }}
+                    </span>
+                {% endif %}
+                <a href="{% url 'frontend_logout' %}" class="btn btn-secondary" style="margin-right:10px;">
+                    <i class="ri-logout-box-r-line"></i> خروج
+                </a>
             </div>
+        </div>
+    </header>
 
-            <!-- المشرفين في القسم -->
-            <h3 style="margin: 1.5rem 0 1rem 0;">تفاصيل المشرفين في القسم</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
-                {% for supervisor in dept_supervisors %}
-                    <a href="{% url 'supervisor_detail' supervisor.id %}" style="text-decoration: none; color: inherit;">
-                        <div class="card" style="padding: 1.5rem; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary-color), #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 6px rgba(26, 79, 156, 0.3);">
-                                    {{ supervisor.name|slice:":1" }}
+    <main>
+        <!-- الإحصائيات -->
+        <section class="stats-grid">
+            <div class="stat-card" onclick="showStatDetails('ma_current')" style="cursor: pointer; transition: transform 0.2s;">
+                <div class="stat-info">
+                    <h3>ماجستير (الحاليين)</h3>
+                    <p>{{ ma_current }}</p>
+                </div>
+                <div class="stat-icon"><i class="ri-award-line"></i></div>
+            </div>
+        
+            <div class="stat-card" onclick="showStatDetails('phd_current')" style="cursor: pointer; transition: transform 0.2s; border-right-color: #6366f1;">
+                <div class="stat-info">
+                    <h3>دكتوراه (الحاليين)</h3>
+                    <p>{{ phd_current }}</p>
+                </div>
+                <div class="stat-icon" style="color: #6366f1;"><i class="ri-graduation-cap-line"></i></div>
+            </div>
+        
+            <div class="stat-card" onclick="showStatDetails('discussed')" style="cursor: pointer; transition: transform 0.2s; border-right-color: #22c55e;">
+                <div class="stat-info">
+                    <h3>ناقش</h3>
+                    <p>{{ discussed_count }}</p>
+                </div>
+                <div class="stat-icon" style="color: #22c55e;"><i class="ri-check-line"></i></div>
+            </div>
+        
+            <div class="stat-card" onclick="showStatDetails('dismissed')" style="cursor: pointer; transition: transform 0.2s; border-right-color: #ef4444;">
+                <div class="stat-info">
+                    <h3>مفصول</h3>
+                    <p>{{ dismissed_count }}</p>
+                </div>
+                <div class="stat-icon" style="color: #ef4444;"><i class="ri-user-unfollow-line"></i></div>
+            </div>
+        </section>
+
+        <!-- اختيار العرض -->
+        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+            <a href="{% url 'supervisors_page' %}" class="card" style="text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="width: 100px; height: 100px; margin: 0 auto 1.5rem; background: linear-gradient(135deg, #1a4f9c, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="ri-user-star-line" style="font-size: 3rem; color: white;"></i>
+                    </div>
+                    <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">عرض المشرفين</h2>
+                    <p style="color: var(--text-light); margin: 0;">استعراض قائمة المشرفين وإحصائياتهم</p>
+                </div>
+            </a>
+
+            <a href="{% url 'researchers_page' %}" class="card" style="text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="width: 100px; height: 100px; margin: 0 auto 1.5rem; background: linear-gradient(135deg, #f59e0b, #f97316); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="ri-group-line" style="font-size: 3rem; color: white;"></i>
+                    </div>
+                    <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">عرض الباحثين</h2>
+                    <p style="color: var(--text-light); margin: 0;">استعراض قائمة الباحثين والمعيدين</p>
+                </div>
+            </a>
+        </section>
+
+        <!-- إحصائيات الأقسام -->
+        <section class="card" style="margin-top: 2rem;">
+            <div class="card-head">
+                <div class="card-title">
+                    <i class="ri-building-line"></i> إحصائيات الأقسام
+                </div>
+            </div>
+        
+            <form method="get" action="{% url 'home_department_stats' %}" style="margin-bottom: 1.5rem;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select name="dept_id" class="form-control" style="flex: 1; max-width: 400px;">
+                        <option value="">-- اختر القسم --</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if selected_dept and selected_dept.id == dept.id %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-search-line"></i> عرض
+                    </button>
+                </div>
+            </form>
+
+            {% if selected_dept %}
+                <!-- معلومات القسم -->
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">{{ selected_dept.name }}</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">{{ dept_stats.total }}</div>
+                            <div style="color: var(--text-light); font-size: 0.9rem;">إجمالي</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #6366f1;">{{ dept_stats.phd }}</div>
+                            <div style="color: var(--text-light); font-size: 0.9rem;">دكتوراه</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #64748b;">{{ dept_stats.ma }}</div>
+                            <div style="color: var(--text-light); font-size: 0.9rem;">ماجستير</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">{{ dept_stats.assistants }}</div>
+                            <div style="color: var(--text-light); font-size: 0.9rem;">معيدين</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- رسم بياني -->
+                <div style="position: relative; height: 400px; margin-bottom: 1.5rem;">
+                    <canvas id="deptChart"></canvas>
+                </div>
+
+                <!-- المشرفين في القسم -->
+                <h3 style="margin: 1.5rem 0 1rem 0;">تفاصيل المشرفين في القسم</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                    {% for supervisor in dept_supervisors %}
+                        <a href="{% url 'supervisor_detail' supervisor.id %}" style="text-decoration: none; color: inherit;">
+                            <div class="card" style="padding: 1.5rem; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary-color), #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 6px rgba(26, 79, 156, 0.3);">
+                                        {{ supervisor.name|slice:":1" }}
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 1.1rem;">د. {{ supervisor.name }}</div>
+                                        <div style="color: var(--text-light); font-size: 0.85rem;">
+                                            إجمالي: <strong style="color: var(--primary-color);">{{ supervisor.total_count }}</strong> باحث
+                                            {% if supervisor.assistants_count > 0 %}
+                                                <span style="color: #f59e0b; font-size: 0.8rem;"> + {{ supervisor.assistants_count }} معيد</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 1.1rem;">د. {{ supervisor.name }}</div>
-                                    <div style="color: var(--text-light); font-size: 0.85rem;">
-                                        إجمالي: <strong style="color: var(--primary-color);">{{ supervisor.total_count }}</strong> باحث
-                                        {% if supervisor.assistants_count > 0 %}
-                                            <span style="color: #f59e0b; font-size: 0.8rem;"> + {{ supervisor.assistants_count }} معيد</span>
-                                        {% endif %}
+                            
+                                <!-- إحصائيات المشرف -->
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 1.5rem; font-weight: bold; color: #6366f1;">{{ supervisor.phd_count }}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-light);">دكتوراه</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 1.5rem; font-weight: bold; color: #64748b;">{{ supervisor.ma_count }}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-light);">ماجستير</div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- إحصائيات المشرف -->
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 1.5rem; font-weight: bold; color: #6366f1;">{{ supervisor.phd_count }}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-light);">دكتوراه</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 1.5rem; font-weight: bold; color: #64748b;">{{ supervisor.ma_count }}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-light);">ماجستير</div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                {% empty %}
-                    <p style="color: var(--text-light); grid-column: 1 / -1; text-align: center; padding: 2rem;">لا يوجد مشرفين في هذا القسم</p>
-                {% endfor %}
+                        </a>
+                    {% empty %}
+                        <p style="color: var(--text-light); grid-column: 1 / -1; text-align: center; padding: 2rem;">لا يوجد مشرفين في هذا القسم</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <!-- Modal للإحصائيات -->
+    <div id="statModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="modalTitle" style="margin: 0; color: var(--primary-color);"></h2>
+                <button onclick="closeStatModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
             </div>
-        {% endif %}
-    </section>
-</main>
-
-<footer>
-    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
-</footer>
-
-<!-- Modal للإحصائيات -->
-<div id="statModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
-        <div style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
-            <h2 id="modalTitle" style="margin: 0; color: var(--primary-color);"></h2>
-            <button onclick="closeStatModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
-        </div>
-        <div id="modalContent" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
-            <div style="text-align: center; padding: 2rem;">
-                <i class="ri-loader-4-line" style="font-size: 3rem; color: var(--primary-color); animation: spin 1s linear infinite;"></i>
-                <p>جاري التحميل...</p>
+            <div id="modalContent" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+                <div style="text-align: center; padding: 2rem;">
+                    <i class="ri-loader-4-line" style="font-size: 3rem; color: var(--primary-color); animation: spin 1s linear infinite;"></i>
+                    <p>جاري التحميل...</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-{% if selected_dept %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-const ctx = document.getElementById('deptChart').getContext('2d');
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: [{% for supervisor in dept_supervisors %}"{{ supervisor.name|truncatewords:2 }}"{% if not forloop.last %},{% endif %}{% endfor %}],
-        datasets: [
-            {
-                label: 'دكتوراه',
-                data: [{% for supervisor in dept_supervisors %}{{ supervisor.phd_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
-                backgroundColor: '#6366f1'
-            },
-            {
-                label: 'ماجستير',
-                data: [{% for supervisor in dept_supervisors %}{{ supervisor.ma_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
-                backgroundColor: '#64748b'
-            },
-            {
-                label: 'معيدين',
-                data: [{% for supervisor in dept_supervisors %}{{ supervisor.assistants_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
-                backgroundColor: '#f59e0b'
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top',
-                rtl: true,
-                labels: {font: {family: 'Cairo', size: 12}}
-            },
-            title: {
-                display: true, 
-                text: 'توزيع الأبحاث حسب المشرفين في {{ selected_dept.name }} (الحاليين فقط)',
-                font: {family: 'Cairo', size: 16, weight: 'bold'}
-            }
+    {% if selected_dept %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+    const ctx = document.getElementById('deptChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [{% for supervisor in dept_supervisors %}"{{ supervisor.name|truncatewords:2 }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+            datasets: [
+                {
+                    label: 'دكتوراه',
+                    data: [{% for supervisor in dept_supervisors %}{{ supervisor.phd_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: '#6366f1'
+                },
+                {
+                    label: 'ماجستير',
+                    data: [{% for supervisor in dept_supervisors %}{{ supervisor.ma_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: '#64748b'
+                },
+                {
+                    label: 'معيدين',
+                    data: [{% for supervisor in dept_supervisors %}{{ supervisor.assistants_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: '#f59e0b'
+                }
+            ]
         },
-        scales: {
-            x: {
-                stacked: true,
-                beginAtZero: true,
-                ticks: {font: {family: 'Cairo'}}
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    rtl: true,
+                    labels: {font: {family: 'Cairo', size: 12}}
+                },
+                title: {
+                    display: true, 
+                    text: 'توزيع الأبحاث حسب المشرفين في {{ selected_dept.name }} (الحاليين فقط)',
+                    font: {family: 'Cairo', size: 16, weight: 'bold'}
+                }
             },
-            y: {
-                stacked: true,
-                ticks: {font: {family: 'Cairo', size: 11}}
+            scales: {
+                x: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: {font: {family: 'Cairo'}}
+                },
+                y: {
+                    stacked: true,
+                    ticks: {font: {family: 'Cairo', size: 11}}
+                }
             }
         }
+    });
+    </script>
+    {% endif %}
+
+    <script>
+    function showStatDetails(statType) {
+        const modal = document.getElementById('statModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+    
+        modal.style.display = 'flex';
+    
+        const titles = {
+            'ma_current': 'ماجستير (الحاليين)',
+            'phd_current': 'دكتوراه (الحاليين)',
+            'discussed': 'الباحثين الذين ناقشوا',
+            'dismissed': 'الباحثين المفصولين'
+        };
+        modalTitle.textContent = titles[statType] || 'التفاصيل';
+    
+        fetch(`/api/home-stat-details/${statType}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.data && data.data.length > 0) {
+                    let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse;">';
+                    html += '<thead><tr style="background: #f8fafc;">';
+                    html += '<th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">الاسم</th>';
+                    html += '<th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">الدرجة</th>';
+                    html += '<th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">المشرفون</th>';
+                    html += '<th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">الحالة</th>';
+                    html += '</tr></thead><tbody>';
+                
+                    data.data.forEach(item => {
+                        html += '<tr style="border-bottom: 1px solid #e5e7eb;">';
+                        html += `<td style="padding: 0.75rem;"><a href="/research/${item.id}/" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">${item.name}</a></td>`;
+                        html += `<td style="padding: 0.75rem;">${item.degree}</td>`;
+                        html += `<td style="padding: 0.75rem;">${item.supervisors}</td>`;
+                        html += `<td style="padding: 0.75rem;">${item.status}</td>`;
+                        html += '</tr>';
+                    });
+                
+                    html += '</tbody></table></div>';
+                    modalContent.innerHTML = html;
+                } else {
+                    modalContent.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem;">لا توجد بيانات</p>';
+                }
+            })
+            .catch(error => {
+                modalContent.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 2rem;">حدث خطأ في تحميل البيانات</p>';
+            });
     }
-});
-</script>
-{% endif %}
 
-<script>
-function showStatDetails(statType) {
-    const modal = document.getElementById('statModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalContent = document.getElementById('modalContent');
-    
-    modal.style.display = 'flex';
-    
-    const titles = {
-        'ma_current': 'ماجستير (الحاليين)',
-        'phd_current': 'دكتوراه (الحاليين)',
-        'discussed': 'الباحثين الذين ناقشوا',
-        'dismissed': 'الباحثين المفصولين'
-    };
-    modalTitle.textContent = titles[statType] || 'التفاصيل';
-    
-    fetch(`/api/home-stat-details/${statType}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.data && data.data.length > 0) {
-                let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse;">';
-                html += '<thead><tr style="background: #f8fafc;">';
-                html += '<th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">الاسم</th>';
-                html += '<th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">الدرجة</th>';
-                html += '<th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">المشرفون</th>';
-                html += '<th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">الحالة</th>';
-                html += '</tr></thead><tbody>';
-                
-                data.data.forEach(item => {
-                    html += '<tr style="border-bottom: 1px solid #e5e7eb;">';
-                    html += `<td style="padding: 0.75rem;"><a href="/research/${item.id}/" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">${item.name}</a></td>`;
-                    html += `<td style="padding: 0.75rem;">${item.degree}</td>`;
-                    html += `<td style="padding: 0.75rem;">${item.supervisors}</td>`;
-                    html += `<td style="padding: 0.75rem;">${item.status}</td>`;
-                    html += '</tr>';
-                });
-                
-                html += '</tbody></table></div>';
-                modalContent.innerHTML = html;
-            } else {
-                modalContent.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem;">لا توجد بيانات</p>';
-            }
-        })
-        .catch(error => {
-            modalContent.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 2rem;">حدث خطأ في تحميل البيانات</p>';
+    function closeStatModal() {
+        document.getElementById('statModal').style.display = 'none';
+    }
+
+    document.querySelectorAll('<script>
+        // ✅ تحسين تجربة الكروت (Hover + Click)
+        document.querySelectorAll('.stat-card[onclick]').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-3px)';
+                card.style.boxShadow = '0 8px 25px rgba(0,0,0,0.08)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '';
+            });
         });
-}
 
-function closeStatModal() {
-    document.getElementById('statModal').style.display = 'none';
-}
+        // ✅ Modal functions
+        async function openStatModal(type) {
+            try {
+                const res = await fetch(`/api/home-stat-details/${type}/`);
+                const payload = await res.json();
 
-document.querySelectorAll('.stat-card[onclick]').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-5px)';
-        this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-    });
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '';
-    });
-});
-</script>
+                const modal = document.getElementById("statModal");
+                const titleEl = document.getElementById("statModalTitle");
+                const bodyEl = document.getElementById("statModalBody");
 
-<style>
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-</style>
+                titleEl.textContent = `${payload.title} (${payload.count})`;
 
-</body>
-</html>
+                const rows = (payload.data || []).map((item, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><a href="/research/${item.id}/" style="color:#1a4f9c; font-weight:600;">${item.name}</a></td>
+                        <td>${item.degree}</td>
+                        <td>${item.supervisors || "—"}</td>
+                        <td>${item.status || "—"}</td>
+                    </tr>
+                `).join("");
+
+                bodyEl.innerHTML = `
+                    <div style="overflow:auto; max-height:70vh;">
+                        <table style="width:100%; border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:8px; border:1px solid #e2e8f0;">#</th>
+                                    <th style="padding:8px; border:1px solid #e2e8f0;">اسم الباحث</th>
+                                    <th style="padding:8px; border:1px solid #e2e8f0;">الدرجة</th>
+                                    <th style="padding:8px; border:1px solid #e2e8f0;">المشرفون</th>
+                                    <th style="padding:8px; border:1px solid #e2e8f0;">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows || `<tr><td colspan="5" style="padding:14px; text-align:center;">لا توجد بيانات</td></tr>`}</tbody>
+                        </table>
+                    </div>
+                `;
+
+                modal.classList.add("open");
+            } catch (e) {
+                alert("حدث خطأ أثناء تحميل التفاصيل");
+            }
+        }
+
+        function closeStatModal() {
+            document.getElementById("statModal").classList.remove("open");
+        }
+
+        // Close modal on outside click
+        document.addEventListener("click", (e) => {
+            const modal = document.getElementById("statModal");
+            if (!modal) return;
+            if (modal.classList.contains("open") && e.target.classList.contains("modal-overlay")) {
+                closeStatModal();
+            }
+        });
+    </script>
+
+    <style>
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+
+    </body>
+    </html>

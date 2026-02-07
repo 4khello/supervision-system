@@ -1,183 +1,198 @@
 {% load static %}
 <!doctype html>
 <html lang="ar" dir="rtl">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>المشرفون</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
 </head>
+
 <body>
 
-<header>
-    <div class="header-container">
-        <div class="brand">
-            <div class="brand-logo">
-                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-logo">
+                    <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+                </div>
+                <div class="brand-text">
+                    <h1>المشرفون</h1>
+                    <p>كلية علوم الرياضة - جامعة بنها</p>
+                </div>
             </div>
-            <div class="brand-text">
-                <h1>المشرفون</h1>
-                <p>كلية علوم الرياضة - جامعة بنها</p>
-            </div>
-        </div>
-        <div class="user-profile">
-            <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
-            <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
-        </div>
-    </div>
-</header>
-
-<main>
-    <!-- البحث والفلاتر -->
-    <section class="card" style="margin-bottom: 1.5rem; padding: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
-            <h2 style="margin: 0;">المشرفون</h2>
-            <a href="{% url 'add_supervisor' %}" class="btn btn-primary">
-                <i class="ri-user-add-line"></i> إضافة مشرف جديد
-            </a>
-        </div>
-        
-        <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-            <div class="search-wrapper" style="flex: 1; min-width: 200px;">
-                <i class="ri-search-line"></i>
-                <input type="text" name="q" class="form-control" placeholder="ابحث باسم المشرف..." value="{{ q }}">
+            <div class="user-profile" {% if not user.is_superuser %}style="cursor: default;" {% endif %}>
+                {% if user.is_superuser %}
+                <span class="user-name">د. أحمد خليل</span>
+                <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+                {% else %}
+                {% if user.department_user %}
+                <span class="user-name">{{ user.department_user.department.name }}</span>
+                {% else %}
+                <span class="user-name">{{ user.username }}</span>
+                {% endif %}
+                {% endif %}
+                <a href="{% url 'frontend_logout' %}" class="btn btn-secondary" style="margin-right:10px;">
+                    <i class="ri-logout-box-r-line"></i> خروج
+                </a>
             </div>
 
-            <select name="dept_id" class="form-control" style="max-width: 250px;">
-                <option value="">-- كل الأقسام --</option>
-                {% for dept in all_departments %}
-                    <option value="{{ dept.id }}" {% if dept_id == dept.id|stringformat:"s" %}selected{% endif %}>
+        </div>
+    </header>
+
+    <main>
+        <!-- البحث والفلاتر -->
+        <section class="card" style="margin-bottom: 1.5rem; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">المشرفون</h2>
+                <a href="{% url 'add_supervisor' %}" class="btn btn-primary">
+                    <i class="ri-user-add-line"></i> إضافة مشرف جديد
+                </a>
+            </div>
+
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <div class="search-wrapper" style="flex: 1; min-width: 200px;">
+                    <i class="ri-search-line"></i>
+                    <input type="text" name="q" class="form-control" placeholder="ابحث باسم المشرف..." value="{{ q }}">
+                </div>
+
+                <select name="dept_id" class="form-control" style="max-width: 250px;">
+                    <option value="">-- كل الأقسام --</option>
+                    {% for dept in all_departments %}
+                    <option value="{{ dept.id }}" {% if dept_id == dept.id %}selected{% endif %}>
                         {{ dept.name }}
                     </option>
-                {% endfor %}
-            </select>
+                    {% endfor %}
+                </select>
 
-            <button type="submit" class="btn btn-primary">
-                <i class="ri-search-line"></i> بحث
-            </button>
-            
-            <button type="button" onclick="window.print()" class="btn btn-secondary">
-                <i class="ri-printer-line"></i> طباعة
-            </button>
-            
-            <a href="/supervisors/" class="btn btn-secondary">
-                <i class="ri-refresh-line"></i> مسح
-            </a>
-            
-            <a href="/export.xlsx?q={{ q }}&dept_id={{ dept_id }}" class="btn btn-secondary">
-                <i class="ri-file-excel-line"></i> Export
-            </a>
-            
-            <a href="{% url 'home' %}" class="btn btn-secondary">
-                <i class="ri-home-line"></i> الرئيسية
-            </a>
-        </form>
-    </section>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-search-line"></i> بحث
+                </button>
 
-    <!-- الجدول -->
-    <section class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>المشرف</th>
-                    <th>القسم</th>
-                    <th>ماجستير</th>
-                    <th>دكتوراه</th>
-                    <th>إجمالي الباحثين</th>
-                    <th>المعيدين</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for s in supervisors %}
-                <tr>
-                    <td><strong>د. {{ s.name }}</strong></td>
-                    <td>{{ s.department.name|default:"—" }}</td>
-                    <td><span class="chip">{{ s.ma_count }}</span></td>
-                    <td><span class="chip">{{ s.phd_count }}</span></td>
-                    <td><span class="chip">{{ s.researchers_total }}</span></td>
-                    <td><span class="chip chip-soft">{{ s.assistants_count }}</span></td>
-                    <td>
-                        <a class="btn btn-small" href="/supervisors/{{ s.id }}/">
-                            <i class="ri-eye-line"></i> فتح
-                        </a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-light);">لا توجد نتائج.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </section>
-</main>
+                <button type="button" onclick="window.print()" class="btn btn-secondary">
+                    <i class="ri-printer-line"></i> طباعة
+                </button>
 
-<footer>
-    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
-</footer>
+                <a href="/supervisors/" class="btn btn-secondary">
+                    <i class="ri-refresh-line"></i> مسح
+                </a>
 
-<footer>
-    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
-</footer>
+                <a href="/export.xlsx?q={{ q }}&dept_id={{ dept_id }}" class="btn btn-secondary">
+                    <i class="ri-file-excel-line"></i> Export
+                </a>
 
-<style>
-@media print {
-    /* إخفاء عناصر غير ضرورية */
-    .no-print,
-    .card:first-of-type,
-    header .user-profile,
-    footer,
-    .btn,
-    button,
-    form {
-        display: none !important;
-    }
-    
-    body {
-        background: white;
-        color: black;
-    }
-    
-    .table-container {
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
-    
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-    }
-    
-    table th,
-    table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
-    
-    table thead {
-        background: #f0f0f0 !important;
-        font-weight: bold;
-    }
-    
-    @page {
-        margin: 1.5cm;
-        size: A4;
-    }
-    
-    header {
-        border-bottom: 2px solid #1a4f9c;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-    }
-    
-    header .brand-text h1 {
-        color: #1a4f9c;
-        font-size: 18px;
-    }
-}
-</style>
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    <i class="ri-home-line"></i> الرئيسية
+                </a>
+            </form>
+        </section>
+
+        <!-- الجدول -->
+        <section class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>المشرف</th>
+                        <th>القسم</th>
+                        <th>ماجستير</th>
+                        <th>دكتوراه</th>
+                        <th>إجمالي الباحثين</th>
+                        <th>المعيدين</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in supervisors %}
+                    <tr>
+                        <td><strong>د. {{ s.name }}</strong></td>
+                        <td>{{ s.department.name|default:"—" }}</td>
+                        <td><span class="chip">{{ s.ma_count }}</span></td>
+                        <td><span class="chip">{{ s.phd_count }}</span></td>
+                        <td><span class="chip">{{ s.researchers_total }}</span></td>
+                        <td><span class="chip chip-soft">{{ s.assistants_count }}</span></td>
+                        <td>
+                            <a class="btn btn-small" href="/supervisors/{{ s.id }}/">
+                                <i class="ri-eye-line"></i> فتح
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-light);">لا توجد
+                            نتائج.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <style>
+        @media print {
+
+            /* إخفاء عناصر غير ضرورية */
+            .no-print,
+            .card:first-of-type,
+            header .user-profile,
+            footer,
+            .btn,
+            button,
+            form {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+                color: black;
+            }
+
+            .table-container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 12px;
+            }
+
+            table th,
+            table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            table thead {
+                background: #f0f0f0 !important;
+                font-weight: bold;
+            }
+
+            @page {
+                margin: 1.5cm;
+                size: A4;
+            }
+
+            header {
+                border-bottom: 2px solid #1a4f9c;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+
+            header .brand-text h1 {
+                color: #1a4f9c;
+                font-size: 18px;
+            }
+        }
+    </style>
 
 </body>
+
 </html>

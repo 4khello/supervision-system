@@ -1,477 +1,522 @@
 {% load static %}
 <!doctype html>
 <html lang="ar" dir="rtl">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>تعديل بحث - {{ research.researcher_name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
     <style>
-    /* نفس الـ style من research_detail */
-    .badge {
-      display:inline-flex; align-items:center; gap:.35rem;
-      padding:.3rem .6rem; border-radius:999px; font-size:.9rem; font-weight:600;
-    }
-    .badge-paid { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
-    .badge-unpaid { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
-    
-    .fees-section {
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-top: 1.5rem;
-    }
-    
-    .fees-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    
-    .fees-card {
-      background: #fff;
-      padding: 1.25rem;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
-    }
-    
-    .year-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.85rem;
-      background: #fff;
-      border-radius: 8px;
-      margin-bottom: 0.65rem;
-      border: 1px solid #e5e7eb;
-    }
-    
-    .delete-year-btn {
-      padding: 0.5rem 1rem;
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      font-family: 'Cairo', sans-serif;
-    }
-    
-    .delete-year-btn:hover {
-      background: #fecaca;
-    }
-    
-    @media (max-width: 768px) {
-      .fees-grid { grid-template-columns: 1fr; }
-    }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .3rem .6rem;
+            border-radius: 999px;
+            font-size: .9rem;
+            font-weight: 600;
+        }
+
+        .badge-paid {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .badge-unpaid {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .fees-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .fees-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .fees-card {
+            background: #fff;
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .year-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem;
+            background: #fff;
+            border-radius: 8px;
+            margin-bottom: 0.65rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .delete-year-btn {
+            padding: 0.5rem 1rem;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .delete-year-btn:hover {
+            background: #fecaca;
+        }
+
+        @media (max-width: 768px) {
+            .fees-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label:has(input[type="checkbox"]):hover,
+        .supervisor-item:hover {
+            background: #f1f5f9;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            font-family: 'Cairo', sans-serif;
+        }
     </style>
 </head>
+
 <body>
 
-<header>
-    <div class="header-container">
-        <div class="brand">
-            <div class="brand-logo">
-                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-logo">
+                    <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+                </div>
+                <div class="brand-text">
+                    <h1>تعديل بحث</h1>
+                    <p>كلية علوم الرياضة - جامعة بنها</p>
+                </div>
             </div>
-            <div class="brand-text">
-                <h1>تعديل بحث</h1>
-                <p>كلية علوم الرياضة - جامعة بنها</p>
-            </div>
-        </div>
-        <div class="user-profile">
-            <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
-            <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
-        </div>
-    </div>
-</header>
 
-<main>
-    <div class="card" style="max-width: 900px; margin: 2rem auto;">
-        <div class="card-head" style="margin-bottom: 2rem;">
-            <div class="card-title">
-                <i class="ri-pencil-line"></i> تعديل بيانات: {{ research.researcher_name }}
+            <!-- ✅ نفس نظام اليوزر اللي عملناه -->
+            <div class="user-profile" {% if not user.is_superuser %}style="cursor: default;"{% endif %}>
+                {% if user.is_superuser %}
+                    <span class="user-name">د. أحمد خليل</span>
+                    <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+                {% else %}
+                    {% if user.department_user %}
+                        <span class="user-name">{{ user.department_user.department.name }}</span>
+                    {% else %}
+                        <span class="user-name">{{ user.username }}</span>
+                    {% endif %}
+                {% endif %}
+
+                <a href="{% url 'frontend_logout' %}" class="btn btn-secondary" style="margin-right:10px;">
+                    <i class="ri-logout-box-r-line"></i> خروج
+                </a>
             </div>
         </div>
+    </header>
 
-        {% if messages %}
+    <main>
+        <div class="card" style="max-width: 900px; margin: 2rem auto;">
+            <div class="card-head" style="margin-bottom: 2rem;">
+                <div class="card-title">
+                    <i class="ri-pencil-line"></i> تعديل بيانات: {{ research.researcher_name }}
+                </div>
+            </div>
+
+            {% if messages %}
             <div style="margin-bottom: 1.5rem;">
                 {% for message in messages %}
-                    <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %};
-                                padding: 1rem;
-                                border-radius: 8px;
-                                border-right: 4px solid {% if message.tags == 'error' %}#dc2626{% else %}#16a34a{% endif %};">
-                        {{ message }}
-                    </div>
+                <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %};
+                            padding: 1rem;
+                            border-radius: 8px;
+                            border-right: 4px solid {% if message.tags == 'error' %}#dc2626{% else %}#16a34a{% endif %};">
+                    {{ message }}
+                </div>
                 {% endfor %}
             </div>
-        {% endif %}
+            {% endif %}
 
-        <form method="post">
-            {% csrf_token %}
+            <form method="post">
+                {% csrf_token %}
 
-            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
-                    <i class="ri-user-line"></i> المعلومات الأساسية
-                </h3>
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                        <i class="ri-user-line"></i> المعلومات الأساسية
+                    </h3>
 
-                <div class="form-group">
-                    <label for="researcher_name">اسم الباحث <span style="color: red;">*</span></label>
-                    <input type="text" id="researcher_name" name="researcher_name" class="form-control"
-                           value="{{ research.researcher_name }}" required>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label for="degree">الدرجة العلمية <span style="color: red;">*</span></label>
-                        <select id="degree" name="degree" class="form-control" required>
-                            <option value="MA" {% if research.degree == "MA" %}selected{% endif %}>ماجستير</option>
-                            <option value="PHD" {% if research.degree == "PHD" %}selected{% endif %}>دكتوراه</option>
+                        <label for="researcher_name">اسم الباحث <span style="color: red;">*</span></label>
+                        <input type="text" id="researcher_name" name="researcher_name" class="form-control"
+                               value="{{ research.researcher_name }}" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="degree">الدرجة العلمية <span style="color: red;">*</span></label>
+                            <select id="degree" name="degree" class="form-control" required>
+                                <option value="MA" {% if research.degree == "MA" %}selected{% endif %}>ماجستير</option>
+                                <option value="PHD" {% if research.degree == "PHD" %}selected{% endif %}>دكتوراه</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="researcher_type">النوع <span style="color: red;">*</span></label>
+                            <select id="researcher_type" name="researcher_type" class="form-control" required>
+                                <option value="RESEARCHER" {% if research.researcher_type == "RESEARCHER" %}selected{% endif %}>باحث</option>
+                                <option value="ASSISTANT" {% if research.researcher_type == "ASSISTANT" %}selected{% endif %}>معيد</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">رقم الهاتف</label>
+                        <input type="text" id="phone" name="phone" class="form-control"
+                               value="{{ research.phone|default:'' }}" placeholder="مثال: 010xxxxxxxx">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">عنوان الرسالة</label>
+                        <textarea id="title" name="title" class="form-control" rows="3"
+                                  placeholder="اكتب عنوان الرسالة...">{{ research.title }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department">القسم</label>
+                        <select id="department" name="department" class="form-control">
+                            <option value="">-- اختر القسم --</option>
+                            {% for dept in all_departments %}
+                                <option value="{{ dept.id }}" {% if research.department_id == dept.id %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
                         </select>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="researcher_type">النوع <span style="color: red;">*</span></label>
-                        <select id="researcher_type" name="researcher_type" class="form-control" required>
-                            <option value="RESEARCHER" {% if research.researcher_type == "RESEARCHER" %}selected{% endif %}>باحث</option>
-                            <option value="ASSISTANT" {% if research.researcher_type == "ASSISTANT" %}selected{% endif %}>معيد</option>
-                        </select>
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                        <i class="ri-flag-line"></i> الحالة
+                    </h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="status">الحالة <span style="color: red;">*</span></label>
+                            <select id="status" name="status" class="form-control" required>
+                                <option value="REGISTERED" {% if research.status == "REGISTERED" %}selected{% endif %}>مسجل</option>
+                                <option value="DISCUSSED" {% if research.status == "DISCUSSED" %}selected{% endif %}>ناقش</option>
+                                <option value="DISMISSED" {% if research.status == "DISMISSED" %}selected{% endif %}>مفصول</option>
+                                <option value="CANCELLED" {% if research.status == "CANCELLED" %}selected{% endif %}>إلغاء</option>
+                                <option value="OTHER" {% if research.status == "OTHER" %}selected{% endif %}>أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status_note">ملاحظة الحالة</label>
+                            <input type="text" id="status_note" name="status_note" class="form-control"
+                                   value="{{ research.status_note }}" placeholder="مثال: ناقش بتاريخ...">
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="phone">رقم الهاتف</label>
-                    <input type="text" id="phone" name="phone" class="form-control"
-                           value="{{ research.phone|default:'' }}" placeholder="مثال: 010xxxxxxxx">
-                </div>
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                        <i class="ri-calendar-line"></i> التواريخ المهمة
+                    </h3>
 
-                <div class="form-group">
-                    <label for="title">عنوان الرسالة</label>
-                    <textarea id="title" name="title" class="form-control" rows="3"
-                              placeholder="اكتب عنوان الرسالة...">{{ research.title }}</textarea>
-                </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label for="registration_date">تاريخ التسجيل</label>
+                            <input type="date" id="registration_date" name="registration_date" class="form-control"
+                                   value="{{ research.registration_date|date:'Y-m-d' }}">
+                        </div>
 
-                <div class="form-group">
-                    <label for="department">القسم</label>
-                    <select id="department" name="department" class="form-control">
-                        <option value="">-- اختر القسم --</option>
-                        {% for dept in all_departments %}
-                            <option value="{{ dept.id }}" {% if research.department_id == dept.id %}selected{% endif %}>
-                                {{ dept.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+                        <div class="form-group">
+                            <label for="frame_date">تاريخ الإطار</label>
+                            <input type="date" id="frame_date" name="frame_date" class="form-control"
+                                   value="{{ research.frame_date|date:'Y-m-d' }}">
+                        </div>
 
-            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
-                    <i class="ri-flag-line"></i> الحالة
-                </h3>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label for="status">الحالة <span style="color: red;">*</span></label>
-                        <select id="status" name="status" class="form-control" required>
-                            <option value="REGISTERED" {% if research.status == "REGISTERED" %}selected{% endif %}>مسجل</option>
-                            <option value="DISCUSSED" {% if research.status == "DISCUSSED" %}selected{% endif %}>ناقش</option>
-                            <option value="DISMISSED" {% if research.status == "DISMISSED" %}selected{% endif %}>مفصول</option>
-                            <option value="CANCELLED" {% if research.status == "CANCELLED" %}selected{% endif %}>إلغاء</option>
-                            <option value="OTHER" {% if research.status == "OTHER" %}selected{% endif %}>أخرى</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="status_note">ملاحظة الحالة</label>
-                        <input type="text" id="status_note" name="status_note" class="form-control"
-                               value="{{ research.status_note }}" placeholder="مثال: ناقش بتاريخ...">
+                        <div class="form-group">
+                            <label for="university_approval_date">تاريخ موافقة الجامعة</label>
+                            <input type="date" id="university_approval_date" name="university_approval_date"
+                                   class="form-control" value="{{ research.university_approval_date|date:'Y-m-d' }}">
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
-                    <i class="ri-calendar-line"></i> التواريخ المهمة
-                </h3>
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                        <i class="ri-user-star-line"></i> المشرفون
+                    </h3>
 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                    <div class="form-group">
-                        <label for="registration_date">تاريخ التسجيل</label>
-                        <input type="date" id="registration_date" name="registration_date" class="form-control"
-                               value="{{ research.registration_date|date:'Y-m-d' }}">
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" id="supervisorSearch" class="form-control" placeholder="🔍 ابحث عن مشرف..."
+                               onkeyup="filterSupervisors()">
                     </div>
 
-                    <div class="form-group">
-                        <label for="frame_date">تاريخ الإطار</label>
-                        <input type="date" id="frame_date" name="frame_date" class="form-control"
-                               value="{{ research.frame_date|date:'Y-m-d' }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="university_approval_date">تاريخ موافقة الجامعة</label>
-                        <input type="date" id="university_approval_date" name="university_approval_date" class="form-control"
-                               value="{{ research.university_approval_date|date:'Y-m-d' }}">
-                    </div>
-                </div>
-            </div>
-
-            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
-                    <i class="ri-user-star-line"></i> المشرفون
-                </h3>
-
-                <!-- بحث المشرفين -->
-                <div style="margin-bottom: 1rem;">
-                    <input type="text" id="supervisorSearch" class="form-control"
-                           placeholder="🔍 ابحث عن مشرف..."
-                           onkeyup="filterSupervisors()">
-                </div>
-
-                <div style="background: #fff; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;" id="supervisorsList">
-                    {% for supervisor in all_supervisors %}
-                        <label class="supervisor-item" style="display: flex; align-items: center; padding: 0.5rem; cursor: pointer; border-radius: 6px; margin-bottom: 0.25rem;">
+                    <div style="background: #fff; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;"
+                         id="supervisorsList">
+                        {% for supervisor in all_supervisors %}
+                        <label class="supervisor-item"
+                               style="display: flex; align-items: center; padding: 0.5rem; cursor: pointer; border-radius: 6px; margin-bottom: 0.25rem;">
                             <input type="checkbox" name="supervisors" value="{{ supervisor.id }}"
                                    {% if supervisor.id in current_supervisors %}checked{% endif %}
                                    style="margin-left: 10px;">
                             <span class="supervisor-name">د. {{ supervisor.name }}</span>
                             {% if supervisor.department %}
-                                <span style="margin-right: auto; color: var(--text-light); font-size: 0.9rem;">
-                                    {{ supervisor.department.name }}
-                                </span>
+                            <span style="margin-right: auto; color: var(--text-light); font-size: 0.9rem;">
+                                {{ supervisor.department.name }}
+                            </span>
                             {% endif %}
                         </label>
-                    {% endfor %}
-                </div>
-                <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 0.5rem;">
-                    <i class="ri-information-line"></i> اختر مشرف واحد أو أكثر
-                </p>
-            </div>
-
-            <div class="modal-actions" style="margin-top: 2rem;">
-                <a href="/research/{{ research.id }}/" class="btn btn-secondary">
-                    <i class="ri-arrow-right-line"></i> إلغاء
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="ri-save-line"></i> حفظ التعديلات
-                </button>
-            </div>
-        </form>
-
-        <!-- ✅ إدارة المصروفات (بعد النموذج) -->
-        <div class="fees-section">
-            <h3 style="margin: 0 0 1.5rem 0; color: var(--primary-color);">
-                <i class="ri-money-dollar-circle-line"></i> إدارة المصروفات السنوية
-            </h3>
-
-            <div class="fees-grid">
-                <div class="fees-card">
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.75rem;">
-                        <i class="ri-refresh-line"></i> اختر السنة
-                    </label>
-                    <select id="feesYearSelect" class="form-control" style="margin-bottom: 1rem;">
-                        {% for p in payments %}
-                          <option value="{{ p.year }}">{{ p.year }}</option>
                         {% endfor %}
-                    </select>
-                    <div id="feesStatusBadge" style="margin-bottom: 1rem;"></div>
-                    <button class="btn btn-primary" type="button" onclick="toggleFees()" style="width: 100%;">
-                        <i class="ri-refresh-line"></i> تبديل الحالة
+                    </div>
+
+                    <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 0.5rem;">
+                        <i class="ri-information-line"></i> اختر مشرف واحد أو أكثر
+                    </p>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 2rem;">
+                    <a href="/research/{{ research.id }}/" class="btn btn-secondary">
+                        <i class="ri-arrow-right-line"></i> إلغاء
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-save-line"></i> حفظ التعديلات
                     </button>
                 </div>
+            </form>
 
-                <div class="fees-card">
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.75rem;">
-                        <i class="ri-add-circle-line"></i> إضافة سنة جديدة
-                    </label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input id="addYearInput" type="number" class="form-control" placeholder="مثال: 2026">
-                        <button class="btn btn-secondary" type="button" onclick="addFeesYear()">
-                            <i class="ri-add-line"></i> إضافة
+            <!-- ✅ إدارة المصروفات -->
+            <div class="fees-section">
+                <h3 style="margin: 0 0 1.5rem 0; color: var(--primary-color);">
+                    <i class="ri-money-dollar-circle-line"></i> إدارة المصروفات السنوية
+                </h3>
+
+                <div class="fees-grid">
+                    <div class="fees-card">
+                        <label style="font-weight: 600; display: block; margin-bottom: 0.75rem;">
+                            <i class="ri-refresh-line"></i> اختر السنة
+                        </label>
+                        <select id="feesYearSelect" class="form-control" style="margin-bottom: 1rem;">
+                            {% for p in payments %}
+                            <option value="{{ p.year }}">{{ p.year }}</option>
+                            {% endfor %}
+                        </select>
+                        <div id="feesStatusBadge" style="margin-bottom: 1rem;"></div>
+                        <button class="btn btn-primary" type="button" onclick="toggleFees()" style="width: 100%;">
+                            <i class="ri-refresh-line"></i> تبديل الحالة
                         </button>
                     </div>
-                </div>
-            </div>
 
-            <div>
-                <strong>السنوات المسجلة:</strong>
-                <div id="yearsList" style="margin-top: 1rem;">
-                    {% for p in payments %}
+                    <div class="fees-card">
+                        <label style="font-weight: 600; display: block; margin-bottom: 0.75rem;">
+                            <i class="ri-add-circle-line"></i> إضافة سنة جديدة
+                        </label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input id="addYearInput" type="number" class="form-control" placeholder="مثال: 2026">
+                            <button class="btn btn-secondary" type="button" onclick="addFeesYear()">
+                                <i class="ri-add-line"></i> إضافة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <strong>السنوات المسجلة:</strong>
+                    <div id="yearsList" style="margin-top: 1rem;">
+                        {% for p in payments %}
                         <div class="year-item">
                             <span class="badge {% if p.is_paid %}badge-paid{% else %}badge-unpaid{% endif %}">
-                                {{ p.year }} — {% if p.is_paid %}<i class="ri-check-line"></i> دفع{% else %}<i class="ri-close-line"></i> لم يدفع{% endif %}
+                                {{ p.year }} —
+                                {% if p.is_paid %}
+                                    <i class="ri-check-line"></i> دفع
+                                {% else %}
+                                    <i class="ri-close-line"></i> لم يدفع
+                                {% endif %}
                             </span>
                             <button class="delete-year-btn" onclick="deleteFeesYear({{ p.year }})">
                                 <i class="ri-delete-bin-line"></i> حذف
                             </button>
                         </div>
-                    {% empty %}
+                        {% empty %}
                         <p style="color: #94a3b8; text-align: center; padding: 2rem 0;">لا يوجد سنوات مسجلة بعد</p>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
+
         </div>
-    </div>
-</main>
+    </main>
 
-<footer>
-    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
-</footer>
+    <footer>
+        <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+    </footer>
 
-<style>
-label:has(input[type="checkbox"]):hover,
-.supervisor-item:hover { background: #f1f5f9; }
-textarea.form-control { resize: vertical; font-family: 'Cairo', sans-serif; }
-</style>
+    <script>
+        function filterSupervisors() {
+            const input = document.getElementById('supervisorSearch');
+            const filter = input.value.toLowerCase();
+            const list = document.getElementById('supervisorsList');
+            const items = list.getElementsByClassName('supervisor-item');
+            for (let i = 0; i < items.length; i++) {
+                const name = items[i].getElementsByClassName('supervisor-name')[0];
+                const txtValue = name.textContent || name.innerText;
+                items[i].style.display = (txtValue.toLowerCase().indexOf(filter) > -1) ? "flex" : "none";
+            }
+        }
 
-<script>
-// بحث المشرفين
-function filterSupervisors() {
-    const input = document.getElementById('supervisorSearch');
-    const filter = input.value.toLowerCase();
-    const list = document.getElementById('supervisorsList');
-    const items = list.getElementsByClassName('supervisor-item');
-    for (let i = 0; i < items.length; i++) {
-        const name = items[i].getElementsByClassName('supervisor-name')[0];
-        const txtValue = name.textContent || name.innerText;
-        items[i].style.display = (txtValue.toLowerCase().indexOf(filter) > -1) ? "flex" : "none";
-    }
-}
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return "";
+        }
 
-// المصروفات
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return "";
-}
+        const RESEARCH_ID = {{ research.id }};
+        const csrftoken = getCookie("csrftoken");
 
-const RESEARCH_ID = {{ research.id }};
-const csrftoken = getCookie("csrftoken");
+        const initialMap = {};
+        {% for p in payments %}
+        initialMap["{{ p.year }}"] = {{ p.is_paid|yesno:"true,false" }};
+        {% endfor %}
 
-const initialMap = {};
-{% for p in payments %}
-initialMap["{{ p.year }}"] = {{ p.is_paid|yesno:"true,false" }};
-{% endfor %}
+        function renderBadge(year) {
+            const paid = initialMap[String(year)] === true;
+            const el = document.getElementById("feesStatusBadge");
+            if (paid) {
+                el.innerHTML = `<span class="badge badge-paid"><i class="ri-checkbox-circle-fill"></i> ${year}: مدفوع</span>`;
+            } else {
+                el.innerHTML = `<span class="badge badge-unpaid"><i class="ri-close-circle-fill"></i> ${year}: لم يدفع</span>`;
+            }
+        }
 
-function renderBadge(year){
-  const paid = initialMap[String(year)] === true;
-  const el = document.getElementById("feesStatusBadge");
-  if (paid){
-    el.innerHTML = `<span class="badge badge-paid"><i class="ri-checkbox-circle-fill"></i> ${year}: مدفوع</span>`;
-  } else {
-    el.innerHTML = `<span class="badge badge-unpaid"><i class="ri-close-circle-fill"></i> ${year}: لم يدفع</span>`;
-  }
-}
+        function refreshYearsList() {
+            const years = Object.keys(initialMap).sort((a, b) => Number(b) - Number(a));
+            const list = document.getElementById("yearsList");
+            list.innerHTML = "";
 
-function refreshYearsList(){
-  const years = Object.keys(initialMap).sort((a,b)=>Number(b)-Number(a));
-  const list = document.getElementById("yearsList");
-  list.innerHTML = "";
-  
-  if (years.length === 0){
-    list.innerHTML = `<p style="color: #94a3b8; text-align: center; padding: 2rem 0;">لا يوجد سنوات مسجلة بعد</p>`;
-    return;
-  }
-  
-  years.forEach(y=>{
-    const paid = initialMap[y] === true;
-    const cls = paid ? "badge-paid" : "badge-unpaid";
-    const icon = paid ? "ri-check-line" : "ri-close-line";
-    const txt = paid ? "دفع" : "لم يدفع";
-    
-    const div = document.createElement("div");
-    div.className = "year-item";
-    div.innerHTML = `
-      <span class="badge ${cls}">
-        ${y} — <i class="${icon}"></i> ${txt}
-      </span>
-      <button class="delete-year-btn" onclick="deleteFeesYear(${y})">
-        <i class="ri-delete-bin-line"></i> حذف
-      </button>
-    `;
-    list.appendChild(div);
-  });
-  
-  const sel = document.getElementById("feesYearSelect");
-  sel.innerHTML = "";
-  years.forEach(y=>{
-    const opt = document.createElement("option");
-    opt.value = y;
-    opt.textContent = y;
-    sel.appendChild(opt);
-  });
-  if (years.length > 0) {
-    sel.value = years[0];
-    renderBadge(years[0]);
-  }
-}
+            if (years.length === 0) {
+                list.innerHTML = `<p style="color: #94a3b8; text-align: center; padding: 2rem 0;">لا يوجد سنوات مسجلة بعد</p>`;
+                return;
+            }
 
-function toggleFees(){
-  const year = document.getElementById("feesYearSelect").value;
-  if (!year) return;
-  fetch(`/research/${RESEARCH_ID}/toggle-fees/${year}/`, {
-    method: "POST",
-    headers: {"X-CSRFToken": csrftoken, "Content-Type": "application/json"},
-    body: JSON.stringify({})
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (!data.success) throw new Error();
-    initialMap[String(year)] = (data.status === "paid");
-    renderBadge(year);
-    refreshYearsList();
-  })
-  .catch(() => alert("حصل خطأ"));
-}
+            years.forEach(y => {
+                const paid = initialMap[y] === true;
+                const cls = paid ? "badge-paid" : "badge-unpaid";
+                const icon = paid ? "ri-check-line" : "ri-close-line";
+                const txt = paid ? "دفع" : "لم يدفع";
 
-function addFeesYear(){
-  const year = (document.getElementById("addYearInput").value || "").trim();
-  if (!year) return alert("اكتب السنة");
-  const fd = new FormData();
-  fd.append("year", year);
-  fetch(`/research/${RESEARCH_ID}/add-fees-year/`, {
-    method: "POST",
-    headers: { "X-CSRFToken": csrftoken },
-    body: fd
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (!data.success) throw new Error();
-    const y = String(data.year);
-    if (!(y in initialMap)) initialMap[y] = false;
-    refreshYearsList();
-    document.getElementById("addYearInput").value = "";
-  })
-  .catch(() => alert("حصل خطأ"));
-}
+                const div = document.createElement("div");
+                div.className = "year-item";
+                div.innerHTML = `
+                    <span class="badge ${cls}">
+                        ${y} — <i class="${icon}"></i> ${txt}
+                    </span>
+                    <button class="delete-year-btn" onclick="deleteFeesYear(${y})">
+                        <i class="ri-delete-bin-line"></i> حذف
+                    </button>
+                `;
+                list.appendChild(div);
+            });
 
-function deleteFeesYear(year){
-  if (!confirm(`هل تريد حذف سنة ${year}؟`)) return;
-  fetch(`/research/${RESEARCH_ID}/delete-fees-year/${year}/`, {
-    method: "POST",
-    headers: { "X-CSRFToken": csrftoken }
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (!data.success) throw new Error();
-    delete initialMap[String(year)];
-    refreshYearsList();
-  })
-  .catch(() => alert("حصل خطأ"));
-}
+            const sel = document.getElementById("feesYearSelect");
+            sel.innerHTML = "";
+            years.forEach(y => {
+                const opt = document.createElement("option");
+                opt.value = y;
+                opt.textContent = y;
+                sel.appendChild(opt);
+            });
+            if (years.length > 0) {
+                sel.value = years[0];
+                renderBadge(years[0]);
+            }
+        }
 
-(function init(){
-  const sel = document.getElementById("feesYearSelect");
-  if (sel.options.length > 0) {
-    renderBadge(sel.value);
-    sel.addEventListener('change', function(){ renderBadge(this.value); });
-  }
-})();
-</script>
+        function toggleFees() {
+            const year = document.getElementById("feesYearSelect").value;
+            if (!year) return;
+
+            fetch(`/research/${RESEARCH_ID}/toggle-fees/${year}/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": csrftoken, "Content-Type": "application/json" },
+                body: JSON.stringify({})
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) throw new Error();
+                    initialMap[String(year)] = (data.status === "paid");
+                    renderBadge(year);
+                    refreshYearsList();
+                })
+                .catch(() => alert("حصل خطأ"));
+        }
+
+        function addFeesYear() {
+            const year = (document.getElementById("addYearInput").value || "").trim();
+            if (!year) return alert("اكتب السنة");
+
+            const fd = new FormData();
+            fd.append("year", year);
+
+            fetch(`/research/${RESEARCH_ID}/add-fees-year/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                body: fd
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) throw new Error();
+                    const y = String(data.year);
+                    if (!(y in initialMap)) initialMap[y] = false;
+                    refreshYearsList();
+                    document.getElementById("addYearInput").value = "";
+                })
+                .catch(() => alert("حصل خطأ"));
+        }
+
+        function deleteFeesYear(year) {
+            if (!confirm(`هل تريد حذف سنة ${year}؟`)) return;
+
+            fetch(`/research/${RESEARCH_ID}/delete-fees-year/${year}/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": csrftoken }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) throw new Error();
+                    delete initialMap[String(year)];
+                    refreshYearsList();
+                })
+                .catch(() => alert("حصل خطأ"));
+        }
+
+        (function init() {
+            const sel = document.getElementById("feesYearSelect");
+            if (sel.options.length > 0) {
+                renderBadge(sel.value);
+                sel.addEventListener('change', function () { renderBadge(this.value); });
+            }
+        })();
+    </script>
 
 </body>
 </html>

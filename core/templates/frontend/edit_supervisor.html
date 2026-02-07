@@ -1,102 +1,120 @@
 {% load static %}
 <!doctype html>
 <html lang="ar" dir="rtl">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>تعديل بيانات المشرف - {{ supervisor.name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
 </head>
+
 <body>
 
-<header>
-    <div class="header-container">
-        <div class="brand">
-            <div class="brand-logo">
-                <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-logo">
+                    <img src="{% static 'core/img/faculty_logo.png' %}" alt="شعار جامعة بنها">
+                </div>
+                <div class="brand-text">
+                    <h1>تعديل بيانات المشرف</h1>
+                    <p>كلية علوم الرياضة - جامعة بنها</p>
+                </div>
             </div>
-            <div class="brand-text">
-                <h1>تعديل بيانات المشرف</h1>
-                <p>كلية علوم الرياضة - جامعة بنها</p>
+            <div class="user-profile" {% if not user.is_superuser %}style="cursor: default;" {% endif %}>
+                {% if user.is_superuser %}
+                <span class="user-name">د. أحمد خليل</span>
+                <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
+                {% else %}
+                {% if user.department_user %}
+                <span class="user-name">{{ user.department_user.department.name }}</span>
+                {% else %}
+                <span class="user-name">{{ user.username }}</span>
+                {% endif %}
+                {# ✅ مفيش صورة للأقسام #}
+                {% endif %}
+                <a href="{% url 'frontend_logout' %}" class="btn btn-secondary" style="margin-right:10px;">
+                    <i class="ri-logout-box-r-line"></i> خروج
+                </a>
             </div>
         </div>
-        <div class="user-profile">
-            <span style="font-size: 0.9rem; font-weight: 500;">د. أحمد خليل</span>
-            <img src="{% static 'core/img/admin.png' %}" alt="الملف الشخصي" class="user-avatar">
-        </div>
-    </div>
-</header>
+    </header>
 
-<main>
-    <div class="card" style="max-width: 900px; margin: 2rem auto;">
-        <div class="card-head" style="margin-bottom: 2rem;">
-            <div class="card-title">
-                <i class="ri-edit-line"></i> تعديل بيانات: د. {{ supervisor.name }}
+    <main>
+        <div class="card" style="max-width: 900px; margin: 2rem auto;">
+            <div class="card-head" style="margin-bottom: 2rem;">
+                <div class="card-title">
+                    <i class="ri-edit-line"></i> تعديل بيانات: د. {{ supervisor.name }}
+                </div>
             </div>
-        </div>
 
-        {% if messages %}
+            {% if messages %}
             <div style="margin-bottom: 1.5rem;">
                 {% for message in messages %}
-                    <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %};
+                <div
+                    style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %};
                                 padding: 1rem;
                                 border-radius: 8px;
                                 border-right: 4px solid {% if message.tags == 'error' %}#dc2626{% else %}#16a34a{% endif %};">
-                        {{ message }}
-                    </div>
+                    {{ message }}
+                </div>
                 {% endfor %}
             </div>
-        {% endif %}
+            {% endif %}
 
-        <form method="post">
-            {% csrf_token %}
+            <form method="post">
+                {% csrf_token %}
 
-            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
-                    <i class="ri-user-line"></i> البيانات الأساسية
-                </h3>
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--primary-color);">
+                        <i class="ri-user-line"></i> البيانات الأساسية
+                    </h3>
 
-                <div class="form-group">
-                    <label for="name">اسم المشرف <span style="color: red;">*</span></label>
-                    <input type="text" id="name" name="name" class="form-control" value="{{ supervisor.name }}" required>
-                </div>
+                    <div class="form-group">
+                        <label for="name">اسم المشرف <span style="color: red;">*</span></label>
+                        <input type="text" id="name" name="name" class="form-control" value="{{ supervisor.name }}"
+                            required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="department_id">القسم</label>
-                    <select id="department_id" name="department_id" class="form-control">
-                        <option value="">-- اختر القسم --</option>
-                        {% for dept in departments %}
-                            <option value="{{ dept.id }}" {% if supervisor.department_id == dept.id %}selected{% endif %}>
+                    <div class="form-group">
+                        <label for="department_id">القسم</label>
+                        <select id="department_id" name="department_id" class="form-control">
+                            <option value="">-- اختر القسم --</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if supervisor.department.id == dept.id %}selected{% endif %}>
                                 {{ dept.name }}
                             </option>
-                        {% endfor %}
-                    </select>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+                        <input type="checkbox" id="is_active" name="is_active" {% if supervisor.is_active %}checked{% endif %} style="width:18px;height:18px;">
+                        <label for="is_active" style="margin:0;font-weight:600;">نشط</label>
+                        <span style="color: var(--text-light); font-size: 0.9rem;">لو اتشالت مش هيظهر في القوائم</span>
+
+                    </div>
                 </div>
 
-                <div class="form-group" style="display:flex;align-items:center;gap:10px;">
-                    <input type="checkbox" id="is_active" name="is_active" {% if supervisor.is_active %}checked{% endif %} style="width:18px;height:18px;">
-                    <label for="is_active" style="margin:0;font-weight:600;">نشط</label>
-                    <span style="color: var(--text-light); font-size: 0.9rem;">لو اتشالت مش هيظهر في القوائم</span>
+                <div class="modal-actions" style="margin-top: 2rem;">
+                    <a href="{% url 'supervisor_detail' supervisor.id %}" class="btn btn-secondary">
+                        <i class="ri-arrow-right-line"></i> إلغاء
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-save-line"></i> حفظ التعديلات
+                    </button>
                 </div>
-            </div>
+            </form>
+        </div>
+    </main>
 
-            <div class="modal-actions" style="margin-top: 2rem;">
-                <a href="{% url 'supervisor_detail' supervisor.id %}" class="btn btn-secondary">
-                    <i class="ri-arrow-right-line"></i> إلغاء
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="ri-save-line"></i> حفظ التعديلات
-                </button>
-            </div>
-        </form>
-    </div>
-</main>
-
-<footer>
-    <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
-</footer>
+    <footer>
+        <p>&copy; 2025 كلية علوم الرياضة - جامعة بنها. جميع الحقوق محفوظة.</p>
+    </footer>
 
 </body>
+
 </html>
