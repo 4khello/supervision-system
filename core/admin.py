@@ -80,3 +80,31 @@ class ResearchFeePaymentAdmin(admin.ModelAdmin):
     list_display = ["research", "year", "is_paid", "paid_at"]
     list_filter = ["year", "is_paid"]
     search_fields = ["research__researcher_name"]
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import DepartmentUser
+
+# تسجيل موديل DepartmentUser ليظهر في الأدمين
+@admin.register(DepartmentUser)
+class DepartmentUserAdmin(admin.ModelAdmin):
+    list_display = ["user", "department"]
+    search_fields = ["user__username", "department__name"]
+
+# تخصيص لوحة تحكم المستخدمين لإظهار القسم الخاص بكل يوزر
+class DepartmentUserInline(admin.StackedInline):
+    model = DepartmentUser
+    can_delete = False
+    verbose_name_plural = "بيانات القسم"
+
+# إعادة تسجيل موديل User الافتراضي مع الإضافات الجديدة
+admin.site.unregister(User)
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    inlines = [DepartmentUserInline]
+    list_display = ("username", "email", "get_department", "is_staff", "is_active")
+
+    def get_department(self, obj):
+        if hasattr(obj, 'department_user'):
+            return obj.department_user.department.name
+        return "N/A"
+    get_department.short_description = "القسم"
