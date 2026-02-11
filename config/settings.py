@@ -84,10 +84,17 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+    )
 }
-    # إضافة الخصائص اللازمة لـ MySQL لضمان دعم العربي
-    DATABASES['default']['OPTIONS'] = {'charset': 'utf8mb4'}
+
+# ضيف الجزء ده تحت الـ DATABASES مباشرة
+DATABASES['default']['OPTIONS'] = {
+    'connect_timeout': 30, # بيخلي البرنامج يصبر 30 ثانية قبل ما يقول "Lost connection"
+    'charset': 'utf8mb4',
+}
 else:
     # إعدادات الجهاز المحلي (Local)
     DATABASES = {
