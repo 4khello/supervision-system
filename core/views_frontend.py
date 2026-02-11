@@ -781,12 +781,41 @@ def add_researcher(request):
         messages.error(request, "غير مسموح لك بالإضافة. (الأدمن فقط)")
         return redirect("researchers_page")
     
-    # ✅ جلب البيانات المطلوبة للقوائم المنسدلة
-    context = {
+    if request.method == "POST":
+        # إنشاء سجل الباحث
+        research = Research.objects.create(
+            researcher_name=request.POST.get("researcher_name"),
+            degree=request.POST.get("degree"),
+            researcher_type=request.POST.get("researcher_type"),
+            phone=request.POST.get("phone"),
+            title=request.POST.get("title"),
+            status=request.POST.get("status"),
+            status_note=request.POST.get("status_note"),
+            department_id=request.POST.get("department") or None,
+            registration_date=request.POST.get("registration_date") or None,
+            frame_date=request.POST.get("frame_date") or None,
+            university_approval_date=request.POST.get("university_approval_date") or None
+        )
+
+        # ربط المشرفين
+        supervisor_ids = request.POST.getlist("supervisors")
+        for s_id in supervisor_ids:
+            ResearchSupervision.objects.create(research=research, supervisor_id=int(s_id))
+
+        # حفظ المصروفات المرسلة من الـ Template
+        fees_json = request.POST.get("fees_data")
+        if fees_json:
+            fees_dict = json.loads(fees_json)
+            for year, is_paid in fees_dict.items():
+                ResearchFeePayment.objects.create(research=research, year=int(year), is_paid=is_paid)
+
+        messages.success(request, f"تم إضافة الباحث {research.researcher_name} بنجاح!")
+        return redirect("research_detail", pk=research.id)
+
+    return render(request, "frontend/add_researcher.html", {
         "all_departments": Department.objects.all().order_by('name'),
-        "all_supervisors": Supervisor.objects.filter(is_active=True).order_by('name'),
-    }
-    return render(request, "frontend/add_researcher.html", context)
+        "all_supervisors": Supervisor.objects.filter(is_active=True).order_by('name')
+    })
 
 
 @login_required
@@ -796,8 +825,38 @@ def edit_research(request, pk):
         return redirect("research_detail", pk=pk)
 
     research = get_object_or_404(Research, pk=pk)
-    
-    # ✅ جلب البيانات للتعديل لضمان ظهور القوائم
+
+    if request.method == "POST":
+        # 1. استلام البيانات من الفورم
+        research.researcher_name = request.POST.get("researcher_name")
+        research.degree = request.POST.get("degree")
+        research.researcher_type = request.POST.get("researcher_type")
+        research.phone = request.POST.get("phone")
+        research.title = request.POST.get("title")
+        research.status = request.POST.get("status")
+        research.status_note = request.POST.get("status_note")
+        
+        dept_id = request.POST.get("department")
+        research.department_id = int(dept_id) if dept_id else None
+
+        # التعامل مع التواريخ (لتجنب أخطاء الفورمات)
+        reg_date = request.POST.get("registration_date")
+        research.registration_date = reg_date if reg_date else None
+        
+        # 2. حفظ البيانات الأساسية
+        research.save()
+
+        # 3. تحديث المشرفين (علاقة Many-to-Many)
+        supervisor_ids = request.POST.getlist("supervisors")
+        # مسح الروابط القديمة وإضافة الجديدة
+        ResearchSupervision.objects.filter(research=research).delete()
+        for s_id in supervisor_ids:
+            ResearchSupervision.objects.create(research=research, supervisor_id=int(s_id))
+
+        messages.success(request, f"تم تحديث بيانات {research.researcher_name} بنجاح!")
+        return redirect("research_detail", pk=research.id)
+
+    # هذا الجزء للعرض فقط (GET)
     context = {
         "research": research,
         "all_departments": Department.objects.all().order_by('name'),
@@ -827,12 +886,22 @@ def add_supervisor(request):
         messages.error(request, "غير مسموح لك بالإضافة. (الأدمن فقط)")
         return redirect("supervisors_page")
     
-    # ✅ جلب الأقسام علشان تظهر للمشرف الجديد
-    context = {
-        "all_departments": Department.objects.all().order_by('name'),
-    }
-    return render(request, "frontend/add_supervisor.html", context)
+    if request.method == "POST":
+        name = request.POST.get("name")
+        dept_id = request.POST.get("department")
+        is_active = request.POST.get("is_active") == "true" or request.POST.get("is_active") == "on"
+        
+        supervisor = Supervisor.objects.create(
+            name=name,
+            department_id=int(dept_id) if dept_id else None,
+            is_active=is_active
+        )
+        messages.success(request, f"تم إضافة المشرف د. {supervisor.name} بنجاح!")
+        return redirect("supervisors_page")
 
+    return render(request, "frontend/add_supervisor.html", {
+        "all_departments": Department.objects.all().order_by('name')
+    })
 
 @login_required
 def edit_supervisor(request, supervisor_id):
@@ -848,15 +917,14 @@ def edit_supervisor(request, supervisor_id):
         supervisor.department_id = int(dept_id) if dept_id else None
         supervisor.is_active = request.POST.get("is_active") == "on"
         supervisor.save()
+        
         messages.success(request, f"تم تعديل بيانات د. {supervisor.name} بنجاح")
         return redirect("supervisor_detail", pk=supervisor.id)
 
-    # ✅ التعديل هنا: نرسل 'departments' للـ template لكي تظهر في القائمة
-    context = {
+    return render(request, "frontend/edit_supervisor.html", {
         "supervisor": supervisor,
         "departments": Department.objects.all().order_by('name'),
-    }
-    return render(request, "frontend/edit_supervisor.html", context)
+    })
 
 @login_required
 def delete_supervisor(request, pk):
