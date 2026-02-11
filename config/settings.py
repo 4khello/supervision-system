@@ -1,10 +1,14 @@
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
+# -------------------------
+# Security & Debug
+# -------------------------
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
 
@@ -18,18 +22,21 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
-# لو نسيت تحط ALLOWED_HOSTS على Railway
+# Fallback للمحلي
 if not ALLOWED_HOSTS and DEBUG:
     ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 # -------------------------
-# CSRF (علشان 403 بتاع الفورمات)
+# CSRF Settings
 # -------------------------
 CSRF_TRUSTED_ORIGINS = [
     "https://supervision-system-production.up.railway.app",
     "https://*.up.railway.app",
 ]
 
+# -------------------------
+# Application Definition
+# -------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -42,7 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ لازم تبقى هنا بعد SecurityMiddleware
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ ضروري لملفات Static
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -73,36 +80,33 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+
 # -------------------------
 # Database Configuration
 # -------------------------
-import dj_database_url
-import os
-
-# قراءة الرابط من المتغيرات البيئية (يفضل استخدام الرابط الداخلي .internal)
+# قراءة الرابط الموحد من المتغيرات البيئية
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=0,  # لضمان عدم وجود اتصالات معلقة تسبب Handshake error
+            conn_max_age=0,  # ✅ يمنع تعليق الاتصالات في Railway
         )
     }
     
-    # الإعدادات المتقدمة لحل مشاكل الاتصال في Production
+    # الإعدادات المتقدمة لضمان استقرار الـ MySQL Handshake
     DATABASES['default']['OPTIONS'] = {
         'charset': 'utf8mb4',
-        'connect_timeout': 60,   # وقت كافٍ جداً للاتصال (دقيقة كاملة)
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'", # لضمان توافق Django مع MySQL
+        'connect_timeout': 60,   # ✅ يحل مشكلة الـ OperationalError 2013
+        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
     }
     
-    # إلغاء الـ SSL إذا كان هو سبب منع الاتصال في Railway
-    if 'ssl-mode=DISABLED' in DATABASE_URL or not os.getenv('DJANGO_DEBUG', '0') == '1':
-        DATABASES['default']['OPTIONS']['ssl'] = {'ca': None}
+    # تعطيل الـ SSL لضمان عدم رفض الاتصال من Proxy ريل واي
+    DATABASES['default']['OPTIONS']['ssl'] = {'ca': None}
 
 else:
-    # إعدادات العمل المحلي (Local Development)
+    # إعدادات العمل المحلي (Local)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
@@ -114,7 +118,10 @@ else:
             "OPTIONS": {"charset": "utf8mb4"},
         }
     }
- 
+
+# -------------------------
+# Authentication & Localization
+# -------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -127,24 +134,18 @@ TIME_ZONE = "Africa/Cairo"
 USE_I18N = True
 USE_TZ = True
 
-# =========================
-# Static files (WhiteNoise)
-# =========================
+# -------------------------
+# Static Files (WhiteNoise)
+# -------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# ✅ مهم: بلاش STATICFILES_DIRS طالما ملفاتك داخل core/static
-# Django هيلمّها تلقائي من app directories
-
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# -------------------------
+# URLs & Auth Redirects
+# -------------------------
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://supervision-system-production.up.railway.app",
-    "https://*.up.railway.app" # للسماح بأي رابط فرعي من ريل واي
-]
