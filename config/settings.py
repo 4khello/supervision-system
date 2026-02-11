@@ -108,7 +108,7 @@ else:
             "OPTIONS": {"charset": "utf8mb4"},
         }
     }
-
+ 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
