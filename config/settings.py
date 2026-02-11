@@ -4,6 +4,8 @@ import dj_database_url
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# تحميل .env محليًا فقط (لو موجود)
 load_dotenv(BASE_DIR / ".env")
 
 # -------------------------
@@ -22,17 +24,23 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
-# Fallback للمحلي
+# Fallback local
 if not ALLOWED_HOSTS and DEBUG:
     ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 # -------------------------
 # CSRF Settings
+# (الأفضل تخليها من ENV)
 # -------------------------
-CSRF_TRUSTED_ORIGINS = [
-    "https://supervision-system-production.up.railway.app",
-    "https://*.up.railway.app",
-]
+raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
+if raw_csrf.strip():
+    CSRF_TRUSTED_ORIGINS = [
+        o.strip().strip('"').strip("'")
+        for o in raw_csrf.replace("\n", ",").split(",")
+        if o.strip()
+    ]
+else:
+    CSRF_TRUSTED_ORIGINS = []
 
 # -------------------------
 # Application Definition
@@ -49,7 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ ضروري لملفات Static
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -82,31 +90,28 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # -------------------------
-# Database Configuration
+# Database Configuration (Railway-safe)
+# IMPORTANT:
+# استخدم MYSQL_URL أولًا (الـ internal داخل Railway)
 # -------------------------
-# قراءة الرابط الموحد من المتغيرات البيئية
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.config(
+        "default": dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=0,  # ✅ يمنع تعليق الاتصالات في Railway
+            conn_max_age=60,  # ✅ أفضل من 0
         )
     }
-    
-    # الإعدادات المتقدمة لضمان استقرار الـ MySQL Handshake
-    DATABASES['default']['OPTIONS'] = {
-        'charset': 'utf8mb4',
-        'connect_timeout': 60,   # ✅ يحل مشكلة الـ OperationalError 2013
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-    }
-    
-    # تعطيل الـ SSL لضمان عدم رفض الاتصال من Proxy ريل واي
-    DATABASES['default']['OPTIONS']['ssl'] = {'ca': None}
 
+    # ✅ خيارات مهمة لاستقرار الاتصال
+    DATABASES["default"]["OPTIONS"] = {
+        "charset": "utf8mb4",
+        "connect_timeout": 60,
+        "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+    }
 else:
-    # إعدادات العمل المحلي (Local)
+    # Local fallback
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
