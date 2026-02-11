@@ -79,29 +79,38 @@ WSGI_APPLICATION = "config.wsgi.application"
 import dj_database_url
 import os
 
+# قراءة الرابط من المتغيرات البيئية (يفضل استخدام الرابط الداخلي .internal)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=0, # إلغاء الـ persistent connections مؤقتاً لحل مشكلة الـ handshake
+            conn_max_age=0,  # لضمان عدم وجود اتصالات معلقة تسبب Handshake error
         )
     }
+    
+    # الإعدادات المتقدمة لحل مشاكل الاتصال في Production
     DATABASES['default']['OPTIONS'] = {
         'charset': 'utf8mb4',
-        'connect_timeout': 60,  # زودنا الوقت لـ 60 ثانية كاملة
-        'ssl': {'ca': None}     # إلغاء فحص الـ SSL اللي ممكن يكون هو السبب
+        'connect_timeout': 60,   # وقت كافٍ جداً للاتصال (دقيقة كاملة)
+        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'", # لضمان توافق Django مع MySQL
     }
+    
+    # إلغاء الـ SSL إذا كان هو سبب منع الاتصال في Railway
+    if 'ssl-mode=DISABLED' in DATABASE_URL or not os.getenv('DJANGO_DEBUG', '0') == '1':
+        DATABASES['default']['OPTIONS']['ssl'] = {'ca': None}
+
 else:
+    # إعدادات العمل المحلي (Local Development)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": "supervision_db",
-            "USER": "root",
-            "PASSWORD": "",
-            "HOST": "127.0.0.1",
-            "PORT": "3306",
+            "NAME": os.getenv("DB_NAME", "supervision_db"),
+            "USER": os.getenv("DB_USER", "root"),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+            "PORT": os.getenv("DB_PORT", "3306"),
             "OPTIONS": {"charset": "utf8mb4"},
         }
     }
