@@ -75,28 +75,28 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # -------------------------
-# Database
+# Database Configuration
 # -------------------------
 import dj_database_url
 
-# الأولوية للرابط الموحد (الموجود في Railway)، ولو مش موجود بيستخدم الإعدادات المحلية
+# قراءة الرابط الموحد من المتغيرات البيئية
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=600,
-    )
-}
-
-# ضيف الجزء ده تحت الـ DATABASES مباشرة
-DATABASES['default']['OPTIONS'] = {
-    'connect_timeout': 30, # بيخلي البرنامج يصبر 30 ثانية قبل ما يقول "Lost connection"
-    'charset': 'utf8mb4',
-}
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=False
+        )
+    }
+    # إعدادات إضافية لحل مشكلة الـ Handshake ودعم اللغة العربية
+    DATABASES['default']['OPTIONS'] = {
+        'charset': 'utf8mb4',
+        'connect_timeout': 30,  # ✅ ضروري جداً لتجنب خطأ Lost connection (2013)
+    }
 else:
-    # إعدادات الجهاز المحلي (Local)
+    # إعدادات العمل المحلي (Local Development)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
