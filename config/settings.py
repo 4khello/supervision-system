@@ -77,33 +77,31 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database Configuration
 # -------------------------
 import dj_database_url
+import os
 
-# قراءة الرابط الموحد من المتغيرات البيئية
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=False
+            conn_max_age=0, # إلغاء الـ persistent connections مؤقتاً لحل مشكلة الـ handshake
         )
     }
-    # إعدادات إضافية لحل مشكلة الـ Handshake ودعم اللغة العربية
     DATABASES['default']['OPTIONS'] = {
         'charset': 'utf8mb4',
-        'connect_timeout': 30,  # ✅ ضروري جداً لتجنب خطأ Lost connection (2013)
+        'connect_timeout': 60,  # زودنا الوقت لـ 60 ثانية كاملة
+        'ssl': {'ca': None}     # إلغاء فحص الـ SSL اللي ممكن يكون هو السبب
     }
 else:
-    # إعدادات العمل المحلي (Local Development)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": os.getenv("DB_NAME", "supervision_db"),
-            "USER": os.getenv("DB_USER", "root"),
-            "PASSWORD": os.getenv("DB_PASSWORD", ""),
-            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-            "PORT": os.getenv("DB_PORT", "3306"),
+            "NAME": "supervision_db",
+            "USER": "root",
+            "PASSWORD": "",
+            "HOST": "127.0.0.1",
+            "PORT": "3306",
             "OPTIONS": {"charset": "utf8mb4"},
         }
     }
