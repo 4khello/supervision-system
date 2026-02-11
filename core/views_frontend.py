@@ -780,7 +780,13 @@ def add_researcher(request):
     if not can_edit(request.user):
         messages.error(request, "غير مسموح لك بالإضافة. (الأدمن فقط)")
         return redirect("researchers_page")
-    return render(request, "frontend/add_researcher.html")
+    
+    # ✅ جلب البيانات المطلوبة للقوائم المنسدلة
+    context = {
+        "all_departments": Department.objects.all().order_by('name'),
+        "all_supervisors": Supervisor.objects.filter(is_active=True).order_by('name'),
+    }
+    return render(request, "frontend/add_researcher.html", context)
 
 
 @login_required
@@ -790,7 +796,16 @@ def edit_research(request, pk):
         return redirect("research_detail", pk=pk)
 
     research = get_object_or_404(Research, pk=pk)
-    return render(request, "frontend/edit_research.html", {"research": research})
+    
+    # ✅ جلب البيانات للتعديل لضمان ظهور القوائم
+    context = {
+        "research": research,
+        "all_departments": Department.objects.all().order_by('name'),
+        "all_supervisors": Supervisor.objects.filter(is_active=True).order_by('name'),
+        "current_supervisors": list(research.researchsupervision_set.values_list('supervisor_id', flat=True)),
+        "payments": research.fee_payments.all().order_by('-year'),
+    }
+    return render(request, "frontend/edit_research.html", context)
 
 
 @login_required
@@ -811,7 +826,12 @@ def add_supervisor(request):
     if not can_edit(request.user):
         messages.error(request, "غير مسموح لك بالإضافة. (الأدمن فقط)")
         return redirect("supervisors_page")
-    return render(request, "frontend/add_supervisor.html")
+    
+    # ✅ جلب الأقسام علشان تظهر للمشرف الجديد
+    context = {
+        "all_departments": Department.objects.all().order_by('name'),
+    }
+    return render(request, "frontend/add_supervisor.html", context)
 
 
 @login_required
@@ -821,8 +841,22 @@ def edit_supervisor(request, supervisor_id):
         return redirect("supervisor_detail", pk=supervisor_id)
 
     supervisor = get_object_or_404(Supervisor, id=supervisor_id)
-    return render(request, "frontend/edit_supervisor.html", {"supervisor": supervisor})
+    
+    if request.method == "POST":
+        supervisor.name = request.POST.get("name")
+        dept_id = request.POST.get("department_id")
+        supervisor.department_id = int(dept_id) if dept_id else None
+        supervisor.is_active = request.POST.get("is_active") == "on"
+        supervisor.save()
+        messages.success(request, f"تم تعديل بيانات د. {supervisor.name} بنجاح")
+        return redirect("supervisor_detail", pk=supervisor.id)
 
+    # ✅ التعديل هنا: نرسل 'departments' للـ template لكي تظهر في القائمة
+    context = {
+        "supervisor": supervisor,
+        "departments": Department.objects.all().order_by('name'),
+    }
+    return render(request, "frontend/edit_supervisor.html", context)
 
 @login_required
 def delete_supervisor(request, pk):
