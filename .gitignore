@@ -39,3 +39,12 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+*.xlsx
+*.xls
+users_data.json
+dept_users_data.json
+railway_fixture.json
+*.sqlite3
+.env
+media/
+staticfiles/
