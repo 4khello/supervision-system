@@ -149,13 +149,6 @@ The `Research` model includes the following optional date fields:
 
 These fields are left empty during Excel import and can be updated later from the admin dashboard.
 
-## Security Notes
-
-- Do not commit `.env` to GitHub.
-- Do not upload real student, researcher, or supervisor data to a public repository.
-- Use fake sample data if you want to demonstrate the Excel import feature.
-- Remove real Excel files, exported user fixtures, and password hashes before making the repository public.
-
 ## Future Improvements
 
 - Add a custom dashboard instead of relying only on Django Admin
